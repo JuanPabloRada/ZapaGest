@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>ZapaGest - Dashboard</title>
+    <link rel="icon" href="img/logo software.png" type="image/svg+xml">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+
+<body>
+
+    <div class="app">
+
+        <!-- MENÚ LATERAL -->
+        <aside class="sidebar">
+
+            <div class="sidebar-logo">
+                <img src="img/logo principal.png" alt="ZapaGest">
+                <span>ZapaGest</span>
+            </div>
+
+            <nav class="menu">
+
+                <a href="dashboard.html" class="menu-item active">
+                    🏠
+                    <span>Inicio</span>
+                </a>
+
+                <a href="inventario.html" class="menu-item">
+                    📦
+                    <span>Inventario</span>
+                </a>
+
+                <a href="productos.html" class="menu-item">
+                    👟
+                    <span>Productos</span>
+                </a>
+
+                <a href="ventas.html" class="menu-item">
+                    🛒
+                    <span>Ventas</span>
+                </a>
+
+                <a href="clientes.html" class="menu-item">
+                    👥
+                    <span>Clientes</span>
+                </a>
+
+                <a href="reportes.html" class="menu-item">
+                    📊
+                    <span>Reportes</span>
+                </a>
+
+            </nav>
+
+            <button id="logoutButton" class="logout-button">
+                🚪 Cerrar sesión
+            </button>
+
+        </aside>
+
+
+        <!-- CONTENIDO -->
+        <main class="contenido">
+
+            <header class="topbar">
+
+                <div class="buscador">
+                    <input
+                        type="text"
+                        id="searchInput"
+                        placeholder="Buscar..."
+                    >
+                </div>
+
+                <div class="usuario">
+                    <span>👤</span>
+                    <div>
+                        <strong>Angie</strong>
+                        <small>Administrador</small>
+                    </div>
+                </div>
+
+            </header>
+
+
+            <section class="dashboard">
+
+                <h1>¡Bienvenida, Angie!</h1>
+
+                <p class="descripcion">
+                    Aquí tienes un resumen de tu almacén.
+                </p>
+
+
+                <!-- TARJETAS -->
+                <div class="cards">
+
+                    <article class="card">
+
+                        <span class="card-icon">📦</span>
+
+                        <div>
+                            <p>Total productos</p>
+                            <h2 id="totalProductos">0</h2>
+                        </div>
+
+                    </article>
+
+
+                    <article class="card">
+
+                        <span class="card-icon">🛒</span>
+
+                        <div>
+                            <p>Ventas del mes</p>
+                            <h2 id="ventasMes">$0</h2>
+                        </div>
+
+                    </article>
+
+
+                    <article class="card">
+
+                        <span class="card-icon">👥</span>
+
+                        <div>
+                            <p>Clientes registrados</p>
+                            <h2 id="totalClientes">0</h2>
+                        </div>
+
+                    </article>
+
+
+                    <article class="card alerta">
+
+                        <span class="card-icon">⚠️</span>
+
+                        <div>
+                            <p>Productos con stock bajo</p>
+                            <h2 id="stockBajo">0</h2>
+                        </div>
+
+                    </article>
+
+                </div>
+
+
+                <!-- CONTENIDO INFERIOR -->
+                <div class="dashboard-grid">
+
+                    <section class="panel">
+
+                        <h2>Ventas de la semana</h2>
+
+                        <div id="ventasSemana">
+                            Próximamente se mostrará aquí la información
+                            de ventas.
+                        </div>
+
+                    </section>
+
+
+                    <section class="panel">
+
+                        <h2>Productos más vendidos</h2>
+
+                        <ul id="productosVendidos">
+
+                            <li>
+                                <span>Tenis Nike Air Force</span>
+                                <strong>0</strong>
+                            </li>
+
+                            <li>
+                                <span>Tenis Adidas Samba</span>
+                                <strong>0</strong>
+                            </li>
+
+                            <li>
+                                <span>Botas</span>
+                                <strong>0</strong>
+                            </li>
+
+                        </ul>
+
+                    </section>
+
+                </div>
+
+            </section>
+
+        </main>
+
+    </div>
+
+
+    <script src="js/dashboard.js"></script>
+
+</body>
+
+</html>

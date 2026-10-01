@@ -1,20 +1,3 @@
-/* * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-body {
-    font-family: Arial, sans-serif;
-    min-height: 100vh;
-    background: #f4f4f4;
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
-} */
-
-
 /* =========================================
    CONFIGURACIÓN GENERAL
 ========================================= */
@@ -312,70 +295,16 @@ footer {
 
 
 /* =========================================
-   DISEÑO PARA CELULARES
+   PANTALLA DE LOGIN
 ========================================= */
-
-@media (max-width: 768px) {
-
-    .encabezado {
-        height: auto;
-
-        padding: 20px;
-
-        flex-direction: column;
-
-        gap: 20px;
-    }
-
-    nav {
-        flex-wrap: wrap;
-
-        justify-content: center;
-
-        gap: 15px;
-    }
-
-    .hero {
-        flex-direction: column;
-
-        text-align: center;
-
-        padding: 60px 25px;
-    }
-
-    .hero-texto h1 {
-        font-size: 36px;
-    }
-
-    .hero-texto p {
-        font-size: 16px;
-    }
-
-    .hero-logo {
-        width: 100%;
-
-        margin-top: 50px;
-    }
-
-    .hero-logo img {
-        width: 230px;
-    }
-
-    #nosotros,
-    #funciones {
-        padding: 60px 25px;
-    }
-
-}
-
-/*inicio de*/
 
 .login-container {
     width: 100%;
     max-width: 420px;
     padding: 20px;
 }
-.logo{
+
+.login-container .logo {
     display: block;
     width: 300px;
     height: auto;
@@ -387,7 +316,7 @@ footer {
     padding: 40px;
     border-radius: 12px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
-    margin: -50px,auto,auto,auto; /*arriba,abajo,derecha,izquierda*/
+    margin: -50px auto 0 auto; /* arriba, derecha/izquierda, abajo */
 }
 
 .login-card h1 {
@@ -443,4 +372,62 @@ button:hover {
 #loginMessage {
     margin-top: 15px;
     text-align: center;
+}
+
+
+/* =========================================
+   DISEÑO PARA CELULARES
+========================================= */
+
+@media (max-width: 768px) {
+
+    .encabezado {
+        height: auto;
+
+        padding: 20px;
+
+        flex-direction: column;
+
+        gap: 20px;
+    }
+
+    nav {
+        flex-wrap: wrap;
+
+        justify-content: center;
+
+        gap: 15px;
+    }
+
+    .hero {
+        flex-direction: column;
+
+        text-align: center;
+
+        padding: 60px 25px;
+    }
+
+    .hero-texto h1 {
+        font-size: 36px;
+    }
+
+    .hero-texto p {
+        font-size: 16px;
+    }
+
+    .hero-logo {
+        width: 100%;
+
+        margin-top: 50px;
+    }
+
+    .hero-logo img {
+        width: 230px;
+    }
+
+    #nosotros,
+    #funciones {
+        padding: 60px 25px;
+    }
+
 }

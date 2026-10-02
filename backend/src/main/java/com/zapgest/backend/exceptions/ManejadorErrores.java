@@ -26,4 +26,11 @@ public class ManejadorErrores {
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(Map.of("mensaje", "Ya existe un registro con ese nombre."));
     }
+
+    // Login fallido
+    @ExceptionHandler(CredencialesInvalidasException.class)
+    public ResponseEntity<Map<String, String>> credenciales(CredencialesInvalidasException e) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(Map.of("mensaje", e.getMessage()));
+    }
 }

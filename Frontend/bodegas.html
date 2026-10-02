@@ -9,39 +9,50 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/dashboard.css">
     <link rel="stylesheet" href="css/bodegas.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 
 <body>
 
     <div class="app">
 
-        <!-- MENÚ LATERAL -->
+       <!-- MENÚ LATERAL -->
         <aside class="sidebar">
 
             <div class="sidebar-logo">
                 <img src="img/logo principal.png" alt="ZapaGest">
+
             </div>
 
             <nav class="menu">
-                <a href="dashboard.html" class="menu-item">🏠 
+
+                <a href="dashboard.html" class="menu-item active">
+                    <i class="fa-solid fa-house"></i>
                     <span>Inicio</span>
                 </a>
-                <a href="bodegas.html" class="menu-item active">🏬 
+
+                <a href="bodegas.html" class="menu-item">
+                    <i class="fa-solid fa-shop"></i>
                     <span>Bodegas</span>
                 </a>
-                <a href="calidades.html" class="menu-item">🏷️ 
+
+                <a href="calidades.html" class="menu-item">
+                    <i class="fa-solid fa-pen"></i>
                     <span>Calidades</span>
                 </a>
-                <a href="catalogo.html" class="menu-item">👟 
+
+                <a href="catalogo.html" class="menu-item">
+                    <i class="fa-solid fa-folder-open"></i>
                     <span>Catálogo</span>
                 </a>
-                <a href="usuarios.html" class="menu-item">👥 
-                    <span>Usuarios</span></a>
-            </nav>
 
-            <button id="logoutButton" class="logout-button">
-                🚪 Cerrar sesión
-            </button>
+                <a href="usuarios.html" class="menu-item">
+                    <i class="fa-solid fa-users"></i>
+                    <span>Usuarios</span>
+                </a>
+
+
+            </nav>
 
         </aside>
 
@@ -49,17 +60,44 @@
         <main class="contenido">
 
             <header class="topbar">
+
                 <div class="buscador">
-                    <input type="text" id="searchInput" placeholder="Buscar bodega...">
+                    <input type="text" id="searchInput" placeholder="Buscar...">
                 </div>
 
-                <div class="usuario">
-                    <span>👤</span>
-                    <div>
-                        <strong>Angie</strong>
-                        <small>Administrador</small>
+
+                <div class="usuario-menu">
+                    <button class="usuario" id="usuarioBtn" aria-expanded="false">
+                        <i class="fa-solid fa-circle-user avatar"></i>
+                        <div class="usuario-info">
+                            <strong>Angie</strong>
+                            <small>Administrador</small>
+                        </div>
+                        <i class="fa-solid fa-chevron-down flecha"></i>
+                    </button>
+
+                    <div class="dropdown" id="usuarioDropdown">
+                        <div class="dropdown-perfil">
+                            <i class="fa-solid fa-circle-user"></i>
+                            <div>
+                                <strong>Angie</strong>
+                                <span>angie@zapagest.com</span>
+                                <small>Administrador</small>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <!-- <a href="perfil.html" class="dropdown-item">
+                            <i class="fa-solid fa-user"></i> Mi perfil
+                        </a> -->
+
+                        <button id="logoutButton" class="dropdown-item logout">
+                            <i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión
+                        </button>
                     </div>
                 </div>
+
             </header>
 
             <section class="dashboard">

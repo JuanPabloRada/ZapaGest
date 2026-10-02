@@ -1,0 +1,29 @@
+package com.zapgest.backend.exceptions;
+
+import java.util.Map;
+
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+// Convierte los errores en respuestas JSON con la forma {"mensaje": "..."},
+// que es lo que leen las pantallas de Angie (err.mensaje).
+@RestControllerAdvice
+public class ManejadorErrores {
+
+    // Reglas de negocio que no se cumplen (ej. nombre vacio, ya hay 10 ubicaciones)
+    @ExceptionHandler({ IllegalArgumentException.class, IllegalStateException.class })
+    public ResponseEntity<Map<String, String>> reglaDeNegocio(RuntimeException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("mensaje", e.getMessage()));
+    }
+
+    // La base de datos rechaza el dato (ej. una calidad con un nombre que ya existe)
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<Map<String, String>> datoRepetido(DataIntegrityViolationException e) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(Map.of("mensaje", "Ya existe un registro con ese nombre."));
+    }
+}

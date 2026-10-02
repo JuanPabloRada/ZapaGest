@@ -1,6 +1,6 @@
 // ===== CONFIGURACIÓN =====
-const USAR_API = false; // cámbialo a true cuando Joseph entregue /api/calidades
-const API = "http://localhost:3000/api";
+const USAR_API = false; // true = usa el backend de Joseph; false = datos falsos
+const API = "http://localhost:8080/api";
 
 // ===== ELEMENTOS DEL HTML =====
 const form = document.getElementById("calidadForm");

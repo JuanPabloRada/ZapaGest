@@ -9,14 +9,13 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/dashboard.css">
     <link rel="stylesheet" href="css/bodegas.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 
 <body>
 
     <div class="app">
 
-       <!-- MENÚ LATERAL -->
+        <!-- MENÚ LATERAL -->
         <aside class="sidebar">
 
             <div class="sidebar-logo">
@@ -31,7 +30,7 @@
                     <span>Inicio</span>
                 </a>
 
-                <a href="bodegas.html" class="menu-item">
+                <a href="bodegas.html" class="menu-item active">
                     <i class="fa-solid fa-shop"></i>
                     <span>Bodegas</span>
                 </a>
@@ -53,6 +52,8 @@
 
 
             </nav>
+
+
 
         </aside>
 
@@ -121,12 +122,6 @@
                                     placeholder="Ej. Local Principal" maxlength="60">
                             </div>
 
-                            <div class="form-group">
-                                <label for="direccion">Dirección (opcional)</label>
-                                <input type="text" id="direccion" name="direccion"
-                                    placeholder="Ej. Calle 10 # 5-20" maxlength="100">
-                            </div>
-
                             <button type="submit" id="guardarBtn">Guardar bodega</button>
 
                             <p id="mensaje" class="mensaje" role="status"></p>
@@ -144,7 +139,6 @@
                             <thead>
                                 <tr>
                                     <th>Nombre</th>
-                                    <th>Dirección</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>

@@ -1,12 +1,11 @@
 // ===== CONFIGURACIÓN =====
 const MAX_BODEGAS = 10;
-const USAR_API = false; // cámbialo a true cuando Joseph entregue /api/ubicaciones
-const API = "http://localhost:3000/api";
+const USAR_API = false; // true = usa el backend de Joseph; false = datos falsos
+const API = "http://localhost:8080/api";
 
 // ===== ELEMENTOS DEL HTML =====
 const form = document.getElementById("bodegaForm");
 const inputNombre = document.getElementById("nombre");
-const inputDireccion = document.getElementById("direccion");
 const botonGuardar = document.getElementById("guardarBtn");
 const mensaje = document.getElementById("mensaje");
 const contador = document.getElementById("contador");
@@ -16,8 +15,8 @@ const buscador = document.getElementById("searchInput");
 
 // ===== DATOS FALSOS (se usan mientras no exista la API) =====
 let bodegas = [
-    { id: 1, nombre: "Local Principal", direccion: "Calle 10 # 5-20" },
-    { id: 2, nombre: "Bodega 1", direccion: "" },
+    { id: 1, nombre: "Local Principal" },
+    { id: 2, nombre: "Bodega 1" },
 ];
 
 // ===== ACCESO A DATOS =====
@@ -69,7 +68,7 @@ function dibujarTabla(lista) {
     const visibles = lista.filter(b => b.nombre.toLowerCase().includes(filtro));
 
     tbody.innerHTML = visibles
-        .map(b => `<tr><td>${escapar(b.nombre)}</td><td>${escapar(b.direccion)}</td></tr>`)
+        .map(b => `<tr><td>${escapar(b.nombre)}</td></tr>`)
         .join("");
 
     textoVacio.hidden = lista.length > 0;
@@ -97,7 +96,6 @@ form.addEventListener("submit", async function (event) {
     event.preventDefault();
 
     const nombre = inputNombre.value.trim();
-    const direccion = inputDireccion.value.trim();
 
     if (nombre === "") {
         mostrarMensaje("Escribe el nombre de la bodega.", "error");
@@ -115,7 +113,7 @@ form.addEventListener("submit", async function (event) {
 
     botonGuardar.disabled = true; // evita doble clic
     try {
-        await guardarBodega({ nombre, direccion });
+        await guardarBodega({ nombre });
         form.reset();
         mostrarMensaje("Bodega guardada.", "ok");
         await cargarBodegas();

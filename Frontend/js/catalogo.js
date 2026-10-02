@@ -1,6 +1,8 @@
 // ===== CONFIGURACIÓN =====
-const USAR_API = false; // cámbialo a true cuando Joseph entregue la API
-const API = "http://localhost:3000/api";
+// Las calidades ya existen en el backend; el catálogo todavía no.
+const USAR_API_CALIDADES = false;
+const USAR_API_MODELOS = false; // cámbialo a true cuando Joseph entregue /api/catalogo
+const API = "http://localhost:8080/api";
 
 // ===== ELEMENTOS DEL HTML =====
 const form = document.getElementById("modeloForm");
@@ -49,21 +51,21 @@ let modelos = [
 // Confirma las rutas y los nombres de campos con el contrato de Joseph.
 
 async function obtenerCalidades() {
-    if (!USAR_API) return calidades;
+    if (!USAR_API_CALIDADES) return calidades;
     const res = await fetch(`${API}/calidades`);
     if (!res.ok) throw new Error("No se pudieron cargar las calidades.");
     return res.json();
 }
 
 async function obtenerModelos() {
-    if (!USAR_API) return modelos;
+    if (!USAR_API_MODELOS) return modelos;
     const res = await fetch(`${API}/catalogo`);
     if (!res.ok) throw new Error("No se pudo cargar el catálogo.");
     return res.json();
 }
 
 async function guardarModelo(datos) {
-    if (!USAR_API) {
+    if (!USAR_API_MODELOS) {
         const nuevo = { id: Date.now(), ...datos };
         modelos.push(nuevo);
         return nuevo;

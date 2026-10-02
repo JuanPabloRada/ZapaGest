@@ -16,6 +16,7 @@ loginForm.addEventListener("submit", function(event) {
         return; //se verifica que los campos no esten vacios si lo estan manda un mensaje y no hace nada mas
     }
 
-    loginMessage.textContent = "Datos recibidos correctamente."; //si estan bien 
+    loginMessage.textContent = "Ingresando...";
+    window.location.href = "dashboard.html"; // temporal, luego se cambia por la llamada a la API
 
 });

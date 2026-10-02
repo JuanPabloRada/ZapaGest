@@ -1,0 +1,70 @@
+/* Estilos solo para la pantalla de Bodegas.
+   Reutiliza .panel, .form-group, .topbar, etc. de style.css y dashboard.css.
+   Si algún color no coincide, cámbialo por las variables de tu proyecto. */
+
+.bodegas-grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 20px;
+    align-items: start;
+}
+
+.panel-encabezado {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.contador {
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: #eef2f7;
+}
+
+.contador.lleno {
+    background: #fde8e8;
+    color: #b42318;
+}
+
+.tabla {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tabla th,
+.tabla td {
+    text-align: left;
+    padding: 10px 8px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.mensaje {
+    margin-top: 10px;
+    min-height: 1.2em;
+}
+
+.mensaje.error {
+    color: #b42318;
+}
+
+.mensaje.ok {
+    color: #107a3e;
+}
+
+.vacio {
+    padding: 16px 0;
+    color: #6b7280;
+}
+
+button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+@media (max-width: 900px) {
+    .bodegas-grid {
+        grid-template-columns: 1fr;
+    }
+}

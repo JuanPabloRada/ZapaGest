@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZapaGest - Calidades</title>
+    <link rel="icon" href="img/logo software.png" type="image/svg+xml">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <!-- Comparte estilos con Bodegas (mismo diseño de formulario + tabla) -->
+    <link rel="stylesheet" href="css/bodegas.css">
+</head>
+
+<body>
+
+    <div class="app">
+
+        <!-- MENÚ LATERAL -->
+        <aside class="sidebar">
+
+            <div class="sidebar-logo">
+                <img src="img/logo principal.png" alt="ZapaGest">
+                
+            </div>
+
+            <nav class="menu">
+                <a href="dashboard.html" class="menu-item">🏠 <span>Inicio</span></a>
+                <a href="bodegas.html" class="menu-item">🏬 <span>Bodegas</span></a>
+                <a href="calidades.html" class="menu-item active">🏷️ <span>Calidades</span></a>
+                <a href="catalogo.html" class="menu-item">👟 <span>Catálogo</span></a>
+                <a href="usuarios.html" class="menu-item">👥 <span>Usuarios</span></a>
+            </nav>
+
+            <button id="logoutButton" class="logout-button">
+                🚪 Cerrar sesión
+            </button>
+
+        </aside>
+
+        <!-- CONTENIDO -->
+        <main class="contenido">
+
+            <header class="topbar">
+                <div class="buscador">
+                    <input type="text" id="searchInput" placeholder="Buscar calidad...">
+                </div>
+
+                <div class="usuario">
+                    <span>👤</span>
+                    <div>
+                        <strong>Angie</strong>
+                        <small>Administrador</small>
+                    </div>
+                </div>
+            </header>
+
+            <section class="dashboard">
+
+                <h1>Calidades</h1>
+                <p class="descripcion">
+                    Define los tipos de calidad que manejas. Los usarás para asignar precios en el catálogo.
+                </p>
+
+                <div class="bodegas-grid">
+
+                    <!-- FORMULARIO -->
+                    <section class="panel">
+                        <h2>Nueva calidad</h2>
+
+                        <form id="calidadForm" novalidate>
+
+                            <div class="form-group">
+                                <label for="nombre">Nombre</label>
+                                <input type="text" id="nombre" name="nombre"
+                                    placeholder="Ej. Original, Nacional, Importada" maxlength="40">
+                            </div>
+
+                            <button type="submit" id="guardarBtn">Guardar calidad</button>
+
+                            <p id="mensaje" class="mensaje" role="status"></p>
+                        </form>
+                    </section>
+
+                    <!-- LISTA -->
+                    <section class="panel">
+                        <div class="panel-encabezado">
+                            <h2>Mis calidades</h2>
+                            <span id="contador" class="contador">0</span>
+                        </div>
+
+                        <table class="tabla" id="tablaCalidades">
+                            <thead>
+                                <tr>
+                                    <th>Nombre</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+
+                        <p id="vacio" class="vacio" hidden>
+                            Aún no tienes calidades. Crea la primera con el formulario.
+                        </p>
+                    </section>
+
+                </div>
+
+            </section>
+
+        </main>
+
+    </div>
+
+    <script src="js/dashboard.js"></script> <!-- solo contiene el cierre de sesión -->
+    <script src="js/calidades.js"></script>
+
+</body>
+
+</html>

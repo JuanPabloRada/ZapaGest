@@ -1,7 +1,7 @@
 // ===== CONFIGURACIÓN =====
 // Las calidades ya existen en el backend; el catálogo todavía no.
-const USAR_API_CALIDADES = false;
-const USAR_API_MODELOS = false; // cámbialo a true cuando Joseph entregue /api/catalogo
+const USAR_API_CALIDADES = true;
+const USAR_API_MODELOS = true; // cámbialo a true cuando Joseph entregue /api/catalogo
 const API = "http://localhost:8080/api";
 
 // ===== ELEMENTOS DEL HTML =====

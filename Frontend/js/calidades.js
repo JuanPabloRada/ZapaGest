@@ -1,5 +1,5 @@
 // ===== CONFIGURACIÓN =====
-const USAR_API = false; // true = usa el backend de Joseph; false = datos falsos
+const USAR_API = true; // true = usa el backend de Joseph; false = datos falsos
 const API = "http://localhost:8080/api";
 
 // ===== ELEMENTOS DEL HTML =====

@@ -3,24 +3,79 @@
    Si algún color no coincide, cámbialo por las variables de tu proyecto. */
 
 .bodegas-grid {
-    display: grid;
+    /* display: grid;
     grid-template-columns: 1fr 2fr;
     gap: 20px;
-    align-items: start;
+    align-items: start; */
+    padding: 30px;
+}
+.panel{
+    margin-bottom: 20px;
+}
+.form-group {
+    margin: 20px;
 }
 
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    font-size: 20px;
+    color: #0f203e;
+}
+.form-group input {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #0f203e;
+    border-radius: 5px;
+    font-size: 16px;
+}
+.form-group input:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 5px rgba(37, 99, 235, 0.5);
+}
+.form-group input:focus::placeholder{
+    color:#0f203e;
+}
+
+.panel button {
+    display: flex;       /* flex pero sin ocupar todo el ancho */
+    align-items: center;
+    justify-content: center;
+    margin:16px auto 0;
+    gap: 8px;                   /* espacio entre ícono y texto */
+    padding: 10px 16px;
+    border: none;               /* quita el borde gris por defecto */
+    border-radius: 8px;
+    background: #0f203e;
+    color: #fff;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+}
+
+.panel button:hover {
+    background: #2563eb;        /* el mismo azul que usas en el resto */
+}
 .panel-encabezado {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 12px;
 }
+.mis-bodegas{
+    background: #0f203e;
+    color: #fff;
+}
 
 .contador {
     font-weight: 600;
     padding: 4px 10px;
     border-radius: 999px;
-    background: #eef2f7;
+    background: #2563eb;
 }
 
 .contador.lleno {

@@ -32,7 +32,7 @@
                     <span>Inicio</span>
                 </a>
 
-                <a href="bodegas.html" class="menu-item active">
+                <a href="bodegas.html" class="menu-item">
                     <i class="fa-solid fa-shop"></i>
                     <span>Bodegas</span>
                 </a>
@@ -65,7 +65,7 @@
 
             <header class="topbar">
 
-                <div class="buscador">
+                <div class="buscador focus">
                     <input type="text" id="searchInput" placeholder="Buscar...">
                 </div>
 
@@ -75,7 +75,7 @@
                         <i class="fa-solid fa-circle-user avatar"></i>
                         <div class="usuario-info">
                             <strong>Angie</strong>
-                            <small>Administrador</small>
+                            <small class="rol">Dueño</small>
                         </div>
                         <i class="fa-solid fa-chevron-down flecha"></i>
                     </button>
@@ -86,7 +86,7 @@
                             <div>
                                 <strong>Angie</strong>
                                 <span>angie@zapagest.com</span>
-                                <small>Administrador</small>
+                                <small class="rol">Dueño</small>
                             </div>
                         </div>
 
@@ -119,7 +119,13 @@
 
                     <article class="card">
 
-                        <span class="card-icon">📦</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor"
+                            viewBox="0 0 24 24">
+                            <!--Boxicons v3.0.8 https://boxicons.com | License  https://docs.boxicons.com/free-->
+                            <path
+                                d="M19.54 9.31 9.39 5.08c-.17-.07-.36-.09-.55-.06l-6 1c-.48.08-.84.5-.84.99v11c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2v-5c0-1.62-.97-3.07-2.46-3.69ZM4 7.85l4.88-.81 2.52 1.05-.81 1.88 1.84.79.82-1.9 1.85.77-.82 1.92 1.84.79.83-1.94 1.83.76c.75.31 1.23 1.04 1.23 1.85v1H4V7.86ZM4 18v-2h16v2z">
+                            </path>
+                        </svg>
 
                         <div>
                             <p>Total productos</p>
@@ -131,7 +137,7 @@
 
                     <article class="card">
 
-                        <span class="card-icon">🛒</span>
+                        <i class="fa-solid fa-cart-shopping"></i>
 
                         <div>
                             <p>Ventas del mes</p>
@@ -143,7 +149,7 @@
 
                     <article class="card">
 
-                        <span class="card-icon">👥</span>
+                        <i class="fa-solid fa-users"></i>
 
                         <div>
                             <p>Clientes registrados</p>
@@ -155,7 +161,7 @@
 
                     <article class="card alerta">
 
-                        <span class="card-icon">⚠️</span>
+                        <i class="fa-solid fa-triangle-exclamation"></i>
 
                         <div>
                             <p>Productos con stock bajo</p>

@@ -9,6 +9,8 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/dashboard.css">
     <link rel="stylesheet" href="css/bodegas.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
 </head>
 
 <body>
@@ -25,7 +27,7 @@
 
             <nav class="menu">
 
-                <a href="dashboard.html" class="menu-item active">
+                <a href="dashboard.html" class="menu-item">
                     <i class="fa-solid fa-house"></i>
                     <span>Inicio</span>
                 </a>
@@ -72,7 +74,7 @@
                         <i class="fa-solid fa-circle-user avatar"></i>
                         <div class="usuario-info">
                             <strong>Angie</strong>
-                            <small>Administrador</small>
+                            <small class="rol">Dueño</small>
                         </div>
                         <i class="fa-solid fa-chevron-down flecha"></i>
                     </button>
@@ -83,7 +85,7 @@
                             <div>
                                 <strong>Angie</strong>
                                 <span>angie@zapagest.com</span>
-                                <small>Administrador</small>
+                                <small class="rol">Dueño</small>
                             </div>
                         </div>
 
@@ -129,7 +131,7 @@
                     </section>
 
                     <!-- LISTA -->
-                    <section class="panel">
+                    <section class="panel mis-bodegas">
                         <div class="panel-encabezado">
                             <h2>Mis bodegas</h2>
                             <span id="contador" class="contador">0 de 10</span>

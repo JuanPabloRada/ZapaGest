@@ -5,6 +5,14 @@
     margin-top: 20px;
 }
 
+.panel h2{
+    font-size: 30px;
+}
+
+.panel-catalogo {
+    margin-bottom: 20px;
+}
+
 fieldset {
     border: 1px solid #e5e7eb;
     border-radius: 8px;
@@ -14,15 +22,56 @@ fieldset {
 
 legend {
     font-weight: 600;
-    padding: 0 6px;
+    padding: 10px 6px;
+    font-size: 20px;
 }
 
 .fila-3 {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 12px;
+    grid-template-columns: repeat(4, 1fr);   /* 4 campos, 4 columnas iguales */
+    gap: 16px;
+    align-items: start;                      /* todos arrancan a la misma altura */
 }
 
+.fila-3 .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 0;                               /* quita sangrías que vengan de otros CSS */
+    padding: 0;
+    min-width: 0;                            /* evita que un input empuje la columna */
+}
+
+.fila-3 label {
+    margin: 0;
+    font-size: 16ñpx;
+    font-weight: 600;
+}
+
+.fila-3 input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px 12px;
+    border: 2px solid #0f203e;
+    border-radius: 8px;
+    font-size: 16px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.fila-3 input:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+/* Responsive: 2 columnas en tablet, 1 en celular */
+@media (max-width: 1000px) {
+    .fila-3 { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 600px) {
+    .fila-3 { grid-template-columns: 1fr; }
+}
 /* ----- Desplegables y etiquetas de colores y tallas ----- */
 .desplegable {
     width: 100%;

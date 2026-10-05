@@ -1,5 +1,6 @@
 // ===== CONFIGURACIÓN =====
 const MAX_BODEGAS = 10;
+const MENSAJE_LIMITE = "Ha alcanzado el límite máximo permitido de 10 ubicaciones";
 const USAR_API = false; // true = usa el backend de Joseph; false = datos falsos
 const API = "http://localhost:8080/api";
 
@@ -14,13 +15,30 @@ const textoVacio = document.getElementById("vacio");
 const buscador = document.getElementById("searchInput");
 
 // ===== DATOS FALSOS (se usan mientras no exista la API) =====
+// "activo" indica si la bodega está en uso. El contador solo cuenta las activas.
 let bodegas = [
-    { id: 1, nombre: "Local Principal" },
-    { id: 2, nombre: "Bodega 1" },
+    { id: 1, nombre: "Local Principal", activo: true },
+    { id: 2, nombre: "Bodega 1", activo: true },
+    { id: 3, nombre: "Bodega antigua", activo: false },
 ];
 
+// ===== REGLAS DE NEGOCIO (HU-04) =====
+
+// Si el backend no envía "activo", se asume que la bodega está activa
+function esActiva(bodega) {
+    return bodega.activo !== false;
+}
+
+function contarActivas(lista) {
+    return lista.filter(esActiva).length;
+}
+
+function limiteAlcanzado(lista) {
+    return contarActivas(lista) >= MAX_BODEGAS;
+}
+
 // ===== ACCESO A DATOS =====
-// Estas dos funciones son las únicas que cambian cuando llegue la API.
+// Estas funciones son las únicas que cambian cuando llegue la API.
 
 async function obtenerBodegas() {
     if (!USAR_API) return bodegas;
@@ -32,7 +50,8 @@ async function obtenerBodegas() {
 
 async function guardarBodega(datos) {
     if (!USAR_API) {
-        const nueva = { id: Date.now(), ...datos };
+        const siguienteId = bodegas.reduce((max, b) => Math.max(max, b.id), 0) + 1;
+        const nueva = { id: siguienteId, activo: true, ...datos };
         bodegas.push(nueva);
         return nueva;
     }
@@ -49,6 +68,27 @@ async function guardarBodega(datos) {
     return res.json();
 }
 
+// Activa o desactiva una bodega.
+// OJO: este endpoint (PATCH /api/ubicaciones/{id}) hay que acordarlo con Joseph.
+async function cambiarEstadoBodega(id, activo) {
+    if (!USAR_API) {
+        const bodega = bodegas.find(b => String(b.id) === String(id));
+        if (bodega) bodega.activo = activo;
+        return bodega;
+    }
+
+    const res = await fetch(`${API}/ubicaciones/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ activo }),
+    });
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.mensaje || "No se pudo cambiar el estado de la bodega.");
+    }
+    return res.json();
+}
+
 // ===== PANTALLA =====
 
 function mostrarMensaje(texto, tipo) {
@@ -60,7 +100,7 @@ function mostrarMensaje(texto, tipo) {
 function escapar(texto) {
     const div = document.createElement("div");
     div.textContent = texto ?? "";
-    return div.innerHTML;
+    return div.innerHTML.replace(/"/g, "&quot;");
 }
 
 function dibujarTabla(lista) {
@@ -68,19 +108,25 @@ function dibujarTabla(lista) {
     const visibles = lista.filter(b => b.nombre.toLowerCase().includes(filtro));
 
     tbody.innerHTML = visibles
-        .map(b => `<tr><td>${escapar(b.nombre)}</td></tr>`)
+        .map(b => {
+            const activa = esActiva(b);
+            return `<tr>
+                <td>${escapar(String(b.id))}</td>
+                <td>${escapar(b.nombre)}</td>
+                <td><span class="estado ${activa ? "activa" : "inactiva"}">${activa ? "Activa" : "Inactiva"}</span></td>
+                <td><button type="button" class="btn-estado"
+                    data-id="${escapar(String(b.id))}" data-activa="${activa}">
+                    ${activa ? "Desactivar" : "Activar"}</button></td>
+            </tr>`;
+        })
         .join("");
 
     textoVacio.hidden = lista.length > 0;
 
-    const lleno = lista.length >= MAX_BODEGAS;
-    contador.textContent = `${lista.length} de ${MAX_BODEGAS}`;
-    contador.classList.toggle("lleno", lleno);
-    botonGuardar.disabled = lleno;
-
-    if (lleno) {
-        mostrarMensaje("Llegaste al máximo de 10 bodegas.", "error");
-    }
+    // El contador solo toma en cuenta las bodegas activas
+    contador.textContent = `${contarActivas(lista)} de ${MAX_BODEGAS}`;
+    contador.title = "Solo cuenta las bodegas activas";
+    contador.classList.toggle("lleno", limiteAlcanzado(lista));
 }
 
 async function cargarBodegas() {
@@ -92,6 +138,9 @@ async function cargarBodegas() {
     }
 }
 
+// ===== EVENTOS =====
+
+// Registrar una nueva bodega
 form.addEventListener("submit", async function (event) {
     event.preventDefault();
 
@@ -103,23 +152,60 @@ form.addEventListener("submit", async function (event) {
         return;
     }
 
-    const existe = (await obtenerBodegas()).some(
-        b => b.nombre.toLowerCase() === nombre.toLowerCase()
-    );
-    if (existe) {
-        mostrarMensaje("Ya existe una bodega con ese nombre.", "error");
-        return;
-    }
-
     botonGuardar.disabled = true; // evita doble clic
     try {
+        const lista = await obtenerBodegas();
+
+        // Si ya hay 10 activas, se bloquea la creación de la número 11
+        if (limiteAlcanzado(lista)) {
+            mostrarMensaje(MENSAJE_LIMITE, "error");
+            dibujarTabla(lista);
+            return;
+        }
+
+        // Cada ubicación se identifica por su nombre: no se permiten repetidos
+        const existe = lista.some(b => b.nombre.toLowerCase() === nombre.toLowerCase());
+        if (existe) {
+            mostrarMensaje("Ya existe una bodega con ese nombre.", "error");
+            return;
+        }
+
         await guardarBodega({ nombre });
         form.reset();
         mostrarMensaje("Bodega guardada.", "ok");
         await cargarBodegas();
     } catch (e) {
         mostrarMensaje(e.message, "error");
+    } finally {
         botonGuardar.disabled = false;
+    }
+});
+
+// Activar / desactivar una bodega desde la tabla
+tbody.addEventListener("click", async function (event) {
+    const boton = event.target.closest(".btn-estado");
+    if (!boton) return;
+
+    const id = boton.dataset.id;
+    const activar = boton.dataset.activa !== "true";
+
+    boton.disabled = true;
+    try {
+        const lista = await obtenerBodegas();
+
+        // Reactivar una bodega no puede pasar el máximo de 10 activas
+        if (activar && limiteAlcanzado(lista)) {
+            mostrarMensaje(MENSAJE_LIMITE, "error");
+            return;
+        }
+
+        await cambiarEstadoBodega(id, activar);
+        mostrarMensaje(activar ? "Bodega activada." : "Bodega desactivada.", "ok");
+        await cargarBodegas();
+    } catch (e) {
+        mostrarMensaje(e.message, "error");
+    } finally {
+        boton.disabled = false;
     }
 });
 

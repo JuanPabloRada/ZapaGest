@@ -118,6 +118,28 @@ button:disabled {
     cursor: not-allowed;
 }
 
+.estado {
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+}
+.estado.activa   { background: #dcfce7; color: #107a3e; }
+.estado.inactiva { background: #e5e7eb; color: #4b5563; }
+
+.tabla .btn-estado {
+    margin: 0;
+    padding: 6px 12px;
+    background: transparent;
+    border: 1px solid #fff;
+    color: #fff;
+    font-size: 13px;
+}
+.tabla .btn-estado:hover {
+    background: #2563eb;
+    border-color: #2563eb;
+}
+
 @media (max-width: 900px) {
     .bodegas-grid {
         grid-template-columns: 1fr;

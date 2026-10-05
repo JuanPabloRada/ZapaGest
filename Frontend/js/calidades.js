@@ -1,5 +1,5 @@
 // ===== CONFIGURACIÓN =====
-const USAR_API = true; // true = usa el backend de Joseph; false = datos falsos
+const USAR_API = false; // true = usa el backend de Joseph; false = datos falsos
 const API = "http://localhost:8080/api";
 
 // ===== ELEMENTOS DEL HTML =====
@@ -13,10 +13,12 @@ const textoVacio = document.getElementById("vacio");
 const buscador = document.getElementById("searchInput");
 
 // ===== DATOS FALSOS (se usan mientras no exista la API) =====
+// Son solo ejemplos: el negocio define libremente los nombres de sus calidades
+// (Original, 1.1, AAA, Nacional...). El sistema no las limita a una lista fija.
 let calidades = [
     { id: 1, nombre: "Original" },
-    { id: 2, nombre: "Nacional" },
-    { id: 3, nombre: "Importada" },
+    { id: 2, nombre: "1.1" },
+    { id: 3, nombre: "AAA" },
 ];
 
 // ===== ACCESO A DATOS =====
@@ -32,7 +34,8 @@ async function obtenerCalidades() {
 
 async function guardarCalidad(datos) {
     if (!USAR_API) {
-        const nueva = { id: Date.now(), ...datos };
+        const siguienteId = calidades.reduce((max, c) => Math.max(max, c.id), 0) + 1;
+        const nueva = { id: siguienteId, ...datos };
         calidades.push(nueva);
         return nueva;
     }
@@ -87,7 +90,7 @@ async function cargarCalidades() {
 form.addEventListener("submit", async function (event) {
     event.preventDefault();
 
-    const nombre = inputNombre.value.trim();
+    const nombre = inputNombre.value.trim().replace(/\s+/g, " "); // sin espacios de más
 
     if (nombre === "") {
         mostrarMensaje("Escribe el nombre de la calidad.", "error");

@@ -1,7 +1,7 @@
 // ===== CONFIGURACIÓN =====
 // Las calidades ya existen en el backend; el catálogo todavía no.
-const USAR_API_CALIDADES = true;
-const USAR_API_MODELOS = true; // cámbialo a true cuando Joseph entregue /api/catalogo
+const USAR_API_CALIDADES = false;
+const USAR_API_MODELOS = false; // cámbialo a true cuando Joseph entregue /api/catalogo
 const API = "http://localhost:8080/api";
 
 // ===== ELEMENTOS DEL HTML =====
@@ -25,8 +25,8 @@ const buscador = document.getElementById("searchInput");
 // ===== DATOS FALSOS (se usan mientras no exista la API) =====
 let calidades = [
     { id: 1, nombre: "Original" },
-    { id: 2, nombre: "Nacional" },
-    { id: 3, nombre: "Importada" },
+    { id: 2, nombre: "1.1" },
+    { id: 3, nombre: "AAA" },
 ];
 let colores = ["Negro", "Blanco", "Rojo", "Azul", "Gris"];
 let tallas = ["35", "36", "37", "38", "39", "40", "41", "42", "43", "44"];
@@ -232,17 +232,22 @@ function limpiarSelecciones() {
     }
 }
 
+// La calidad es un atributo de la variante (HU-03):
+// variantes = colores × tallas × calidades.
+// Misma referencia, color y talla con otra calidad = otra variante.
 function actualizarResumen() {
     const c = selColor.elegidos.length;
     const t = selTalla.elegidos.length;
+    const q = filasPrecios.length;
 
-    if (c === 0 || t === 0) {
+    if (c === 0 || t === 0 || q === 0) {
         resumenVariantes.textContent =
-            "Elige colores y tallas para ver cuántas combinaciones tendrá el modelo.";
+            "Elige colores, tallas y al menos una calidad para ver cuántas variantes tendrá la referencia.";
         return;
     }
     resumenVariantes.textContent =
-        `${c} color${c > 1 ? "es" : ""} × ${t} talla${t > 1 ? "s" : ""} = ${c * t} combinaciones`;
+        `${c} color${c > 1 ? "es" : ""} × ${t} talla${t > 1 ? "s" : ""} × ` +
+        `${q} calidad${q > 1 ? "es" : ""} = ${c * t * q} variantes`;
 }
 
 // ===== CALIDADES Y PRECIOS =====
@@ -294,6 +299,8 @@ function dibujarFilasPrecios() {
             </tr>`;
         })
         .join("");
+
+    actualizarResumen();
 }
 
 async function cargarCalidades() {
@@ -397,7 +404,7 @@ async function dibujarModelos() {
                 <td>${escapar(m.nombre)}</td>
                 <td>${escapar(m.marca)}</td>
                 <td>${escapar(m.categoria)}</td>
-                <td>${m.colores.length} × ${m.tallas.length} = ${m.colores.length * m.tallas.length}</td>
+                <td>${m.colores.length} × ${m.tallas.length} × ${m.precios.length} = ${m.colores.length * m.tallas.length * m.precios.length}</td>
                 <td>${precios}</td>
             </tr>`;
         })

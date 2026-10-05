@@ -43,7 +43,7 @@ function limiteAlcanzado(lista) {
 async function obtenerBodegas() {
     if (!USAR_API) return bodegas;
 
-    const res = await fetch(`${API}/ubicaciones`);
+    const res = await apiFetch(`${API}/ubicaciones`);
     if (!res.ok) throw new Error("No se pudieron cargar las bodegas.");
     return res.json();
 }
@@ -56,7 +56,7 @@ async function guardarBodega(datos) {
         return nueva;
     }
 
-    const res = await fetch(`${API}/ubicaciones`, {
+    const res = await apiFetch(`${API}/ubicaciones`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(datos),
@@ -77,7 +77,7 @@ async function cambiarEstadoBodega(id, activo) {
         return bodega;
     }
 
-    const res = await fetch(`${API}/ubicaciones/${id}`, {
+    const res = await apiFetch(`${API}/ubicaciones/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ activo }),

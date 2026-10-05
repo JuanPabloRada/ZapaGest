@@ -1,9 +1,13 @@
 const logoutButton = document.getElementById("logoutButton");
 
-logoutButton.addEventListener("click", function () { //este dice que cuando el usuario haga click se ejecute lo que esta andentro 
-        window.location.href = "login.html"; //este es para devolver de pagina al login
-});
+logoutButton.addEventListener("click", function () {
+    const confirmar = confirm("¿Quieres cerrar sesión?"); // pregunta al usuario
 
+    if (confirmar) {
+        cerrarSesion();                        // borra la sesión guardada
+        window.location.href = "login.html";   // vuelve al login
+    }
+});
  const btn = document.getElementById('usuarioBtn');
     const dropdown = document.getElementById('usuarioDropdown');
 
@@ -28,4 +32,6 @@ logoutButton.addEventListener("click", function () { //este dice que cuando el u
             dropdown.classList.remove('abierto');
             btn.setAttribute('aria-expanded', 'false');
         }
+    
+        
 });

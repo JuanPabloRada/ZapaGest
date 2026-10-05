@@ -1,6 +1,6 @@
 // ===== CONFIGURACIÓN =====
 // Las calidades ya existen en el backend; el catálogo todavía no.
-const USAR_API_CALIDADES = false;
+const USAR_API_CALIDADES = true;
 const USAR_API_MODELOS = false; // cámbialo a true cuando Joseph entregue /api/catalogo
 const API = "http://localhost:8080/api";
 
@@ -52,14 +52,14 @@ let modelos = [
 
 async function obtenerCalidades() {
     if (!USAR_API_CALIDADES) return calidades;
-    const res = await fetch(`${API}/calidades`);
+    const res = await apiFetch(`${API}/calidades`);
     if (!res.ok) throw new Error("No se pudieron cargar las calidades.");
     return res.json();
 }
 
 async function obtenerModelos() {
     if (!USAR_API_MODELOS) return modelos;
-    const res = await fetch(`${API}/catalogo`);
+    const res = await apiFetch(`${API}/catalogo`);
     if (!res.ok) throw new Error("No se pudo cargar el catálogo.");
     return res.json();
 }
@@ -71,7 +71,7 @@ async function guardarModelo(datos) {
         return nuevo;
     }
 
-    const res = await fetch(`${API}/catalogo`, {
+    const res = await apiFetch(`${API}/catalogo`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(datos),
@@ -242,12 +242,12 @@ function actualizarResumen() {
 
     if (c === 0 || t === 0 || q === 0) {
         resumenVariantes.textContent =
-            "Elige colores, tallas y al menos una calidad para ver cuántas variantes tendrá la referencia.";
+            "Elige colores, tallas y al menos una calidad para ver cuántas combinaciones tendrá la referencia.";
         return;
     }
     resumenVariantes.textContent =
         `${c} color${c > 1 ? "es" : ""} × ${t} talla${t > 1 ? "s" : ""} × ` +
-        `${q} calidad${q > 1 ? "es" : ""} = ${c * t * q} variantes`;
+        `${q} calidad${q > 1 ? "es" : ""} = ${c * t * q} combinaciones posibles (aún no se crean ni tienen stock)`;
 }
 
 // ===== CALIDADES Y PRECIOS =====

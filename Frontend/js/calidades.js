@@ -1,5 +1,5 @@
 // ===== CONFIGURACIÓN =====
-const USAR_API = false; // true = usa el backend de Joseph; false = datos falsos
+const USAR_API = true; // true = usa el backend de Joseph; false = datos falsos
 const API = "http://localhost:8080/api";
 
 // ===== ELEMENTOS DEL HTML =====
@@ -27,7 +27,7 @@ let calidades = [
 async function obtenerCalidades() {
     if (!USAR_API) return calidades;
 
-    const res = await fetch(`${API}/calidades`);
+    const res = await apiFetch(`${API}/calidades`);
     if (!res.ok) throw new Error("No se pudieron cargar las calidades.");
     return res.json();
 }
@@ -40,7 +40,7 @@ async function guardarCalidad(datos) {
         return nueva;
     }
 
-    const res = await fetch(`${API}/calidades`, {
+    const res = await apiFetch(`${API}/calidades`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(datos),

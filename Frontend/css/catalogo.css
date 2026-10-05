@@ -7,6 +7,7 @@
 
 .panel h2{
     font-size: 30px;
+    font-family: 'Poppins', sans-serif;
 }
 
 .panel-catalogo {
@@ -44,7 +45,7 @@ legend {
 
 .fila-3 label {
     margin: 0;
-    font-size: 16ñpx;
+    font-size: 16px;
     font-weight: 600;
 }
 
@@ -77,11 +78,33 @@ legend {
     width: 100%;
     max-width: 380px;
     padding: 8px 10px;
+    border: 2px solid #0f203e;
+    color: #0f203e;
+}
+.desplegable option {
+    padding: 8px 10px;
+    background:#0f203e;
+    color: #fff;
+}
+
+.desplegable[arial-label]{
+    color:#6b7280
+}
+
+select:focus {
+  outline: none;
+}
+
+
+.desplegable:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px #2563eb26;
 }
 
 .agregar-chip {
     display: flex;
     flex-wrap: wrap;
+    align-items: center;
     gap: 8px;
     max-width: 480px;
     margin-top: 10px;
@@ -90,7 +113,26 @@ legend {
 .agregar-chip input {
     flex: 1;
     min-width: 160px;
+    box-sizing: border-box;
+    padding: 9px 12px;
+    border: 2px solid #0f203e;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
 }
+
+.agregar-chip input:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+
+.agregar-chip button {
+    margin: 0;
+    padding: 9px 14px;
+}
+
 
 .tags {
     display: flex;
@@ -126,8 +168,7 @@ legend {
 }
 
 button.secundario {
-    background: #fff;
-    color: #1f3a5f;
+    color: #fff;
     border: 1px solid #1f3a5f;
 }
 
@@ -147,28 +188,72 @@ button.secundario {
     padding: 10px 14px;
     border-radius: 8px;
     background: #fff7e6;
-    color: #7a4b00;
+    color: #0f203e;
 }
 
 /* ----- Tabla de precios ----- */
+
 #tablaPrecios {
+    width: 100%;
     margin-top: 12px;
+    border-collapse: collapse;
+}
+
+#tablaPrecios th,
+#tablaPrecios td {
+    padding: 8px 6px;
+    vertical-align: middle;
+    text-align: left;
+}
+
+#tablaPrecios th {
+    font-size: 13px;
+    white-space: nowrap;          /* "Precio mínimo" en una sola línea */
+}
+
+#tablaPrecios td:first-child {
+    white-space: nowrap;          /* el nombre de la calidad no se parte */
+    font-weight: 600;
 }
 
 #tablaPrecios input {
     width: 100%;
-    min-width: 110px;
-    max-width: 160px;
+    min-width: 80px;              /* antes 110px: era lo que desbordaba */
+    max-width: 140px;
+    box-sizing: border-box;       /* el padding ya no ensancha el input */
+    padding: 8px 10px;
+    border: 2px solid #0f203e;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+#tablaPrecios input:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+/* Quita las flechitas de los inputs numéricos */
+#tablaPrecios input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+#tablaPrecios input[type="number"]::-webkit-outer-spin-button,
+#tablaPrecios input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
 }
 
 button.quitar-fila {
     width: 28px;
     height: 28px;
     padding: 0;
+    margin: 0;                    /* por si hereda el margin auto de .panel button */
     border: 1px solid #cbd5e1;
     border-radius: 50%;
     background: #fff;
-    color: #b42318;
+    color: #0f203e;
     line-height: 1;
     cursor: pointer;
 }
@@ -181,7 +266,58 @@ button.quitar-fila:hover {
     overflow-x: auto;
 }
 
-.precio-linea {
-    display: block;
-    white-space: nowrap;
+/* ----- Tabla de precios en pantallas pequeñas: campos apilados ----- */
+@media (max-width: 900px) {
+
+    /* Ocultamos los encabezados; las etiquetas se ponen en cada celda */
+    #tablaPrecios thead {
+        display: none;
+    }
+
+    #tablaPrecios tbody,
+    #tablaPrecios tr,
+    #tablaPrecios td {
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    /* Cada fila es una tarjeta */
+    #tablaPrecios tr {
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 12px;
+        margin-bottom: 12px;
+    }
+
+    #tablaPrecios td {
+        padding: 6px 0;
+        border: none;
+    }
+
+    /* Etiqueta encima de cada campo */
+    #tablaPrecios td::before {
+        display: block;
+        margin-bottom: 4px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #0f203e;
+    }
+
+    #tablaPrecios td:nth-child(1)::before { content: "Calidad"; }
+    #tablaPrecios td:nth-child(2)::before { content: "Costo"; }
+    #tablaPrecios td:nth-child(3)::before { content: "Precio mínimo"; }
+    #tablaPrecios td:nth-child(4)::before { content: "Precio de venta"; }
+
+    /* Inputs a todo el ancho de la tarjeta */
+    #tablaPrecios input {
+        max-width: 100%;
+        min-width: 0;
+    }
+
+    /* El botón de quitar, sin etiqueta y a la derecha */
+    #tablaPrecios td:nth-child(5) {
+        display: flex;
+        justify-content: flex-end;
+    }
 }

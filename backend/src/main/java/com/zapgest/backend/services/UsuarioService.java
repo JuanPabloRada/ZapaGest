@@ -58,7 +58,7 @@ public class UsuarioService {
         return UsuarioResponse.desde(repository.save(usuario));
     }
 
-    public UsuarioResponse login(LoginRequest datos) {
+    public Usuario autenticar(LoginRequest datos) {
         if (vacio(datos.username()) || vacio(datos.password())) {
             throw new CredencialesInvalidasException();
         }
@@ -70,7 +70,7 @@ public class UsuarioService {
                 || !passwordEncoder.matches(datos.password(), usuario.getPasswordHash())) {
             throw new CredencialesInvalidasException();
         }
-        return UsuarioResponse.desde(usuario);
+        return usuario;
     }
 
     private boolean vacio(String texto) {

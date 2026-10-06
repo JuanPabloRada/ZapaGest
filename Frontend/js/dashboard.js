@@ -1,7 +1,17 @@
 const logoutButton = document.getElementById("logoutButton");
 
-logoutButton.addEventListener("click", function () {
-    const confirmar = confirm("¿Quieres cerrar sesión?"); // pregunta al usuario
+if (requerirSesion()) {
+    const usuarioSesion = obtenerUsuarioSesion();
+    document.querySelectorAll(".usuario-info strong, .dropdown-perfil strong").forEach(elemento => {
+        elemento.textContent = usuarioSesion.nombre;
+    });
+    document.querySelectorAll(".usuario-info .rol, .dropdown-perfil .rol, .usuario-info small, .dropdown-perfil small")
+        .forEach(elemento => {
+            elemento.textContent = usuarioSesion.rol;
+        });
+
+    logoutButton.addEventListener("click", () => cerrarSesion());
+}
 
     if (confirmar) {
         cerrarSesion();                        // borra la sesión guardada

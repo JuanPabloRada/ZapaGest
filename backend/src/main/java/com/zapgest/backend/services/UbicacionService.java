@@ -21,7 +21,7 @@ public class UbicacionService {
     }
 
     public List<Ubicacion> listar() {
-        return repository.findAll();
+        return repository.findAllByNegocioId(NEGOCIO_ID);
     }
 
     public Ubicacion crear(Ubicacion ubicacion) {
@@ -31,14 +31,27 @@ public class UbicacionService {
 
         long activas = repository.countByNegocioIdAndActivaTrue(NEGOCIO_ID);
         if (activas >= MAX_UBICACIONES_ACTIVAS) {
-            throw new IllegalStateException("Ya tienes " + MAX_UBICACIONES_ACTIVAS
-                    + " ubicaciones activas. Desactiva una antes de crear otra.");
+            throw new IllegalStateException("Ha alcanzado el límite máximo permitido de 10 ubicaciones");
         }
 
         ubicacion.setId(null);              // el id lo pone la base de datos
         ubicacion.setNegocioId(NEGOCIO_ID);
         ubicacion.setNombre(ubicacion.getNombre().trim());
         ubicacion.setActiva(true);
+        return repository.save(ubicacion);
+    }
+
+    public Ubicacion cambiarEstado(Long id, Boolean activa) {
+        if (activa == null) {
+            throw new IllegalArgumentException("El estado activa es obligatorio.");
+        }
+        Ubicacion ubicacion = repository.findByIdAndNegocioId(id, NEGOCIO_ID)
+                .orElseThrow(() -> new IllegalArgumentException("No se encontró la ubicación."));
+        if (Boolean.TRUE.equals(activa) && !Boolean.TRUE.equals(ubicacion.getActiva())
+                && repository.countByNegocioIdAndActivaTrue(NEGOCIO_ID) >= MAX_UBICACIONES_ACTIVAS) {
+            throw new IllegalStateException("Ha alcanzado el límite máximo permitido de 10 ubicaciones");
+        }
+        ubicacion.setActiva(activa);
         return repository.save(ubicacion);
     }
 }

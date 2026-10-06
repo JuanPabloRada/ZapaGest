@@ -21,6 +21,7 @@ public class RestAccessDeniedHandler implements AccessDeniedHandler {
             AccessDeniedException accessDeniedException) throws IOException, ServletException {
         response.setStatus(HttpStatus.FORBIDDEN.value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.setCharacterEncoding("UTF-8"); // sin esto las tildes salen como simbolos raros
         response.getWriter().write("{\"mensaje\":\"No tiene permisos para realizar esta acción\"}");
     }
 }

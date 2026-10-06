@@ -1,6 +1,5 @@
 // ===== CONFIGURACIÓN =====
-const USAR_API = false; // true = usa el backend de Joseph; false = datos falsos
-const API = "http://localhost:8080/api";
+const USAR_API = true;
 
 // ===== ELEMENTOS DEL HTML =====
 const form = document.getElementById("calidadForm");
@@ -26,10 +25,7 @@ let calidades = [
 
 async function obtenerCalidades() {
     if (!USAR_API) return calidades;
-
-    const res = await fetch(`${API}/calidades`);
-    if (!res.ok) throw new Error("No se pudieron cargar las calidades.");
-    return res.json();
+    return apiFetch("/calidades");
 }
 
 async function guardarCalidad(datos) {
@@ -40,16 +36,10 @@ async function guardarCalidad(datos) {
         return nueva;
     }
 
-    const res = await fetch(`${API}/calidades`, {
+    return apiFetch("/calidades", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(datos),
     });
-    if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.mensaje || "No se pudo crear la calidad.");
-    }
-    return res.json();
 }
 
 // ===== PANTALLA =====

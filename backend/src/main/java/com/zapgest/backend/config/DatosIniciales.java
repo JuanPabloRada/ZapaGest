@@ -21,9 +21,7 @@ public class DatosIniciales implements CommandLineRunner {
     private final UsuarioRepository repository;
     private final PasswordEncoder passwordEncoder;
 
-    // La contraseña sale de la variable de entorno DUENO_PASSWORD.
-    // Si no existe, usa "dueno123" (solo para pruebas locales).
-    @Value("${DUENO_PASSWORD:dueno123}")
+    @Value("${DUENO_PASSWORD:}")
     private String passwordDueno;
 
     public DatosIniciales(UsuarioRepository repository, PasswordEncoder passwordEncoder) {
@@ -35,6 +33,9 @@ public class DatosIniciales implements CommandLineRunner {
     public void run(String... args) {
         if (repository.existsByRol(Rol.DUENO)) {
             return;
+        }
+        if (passwordDueno == null || passwordDueno.length() < 6) {
+            throw new IllegalStateException("DUENO_PASSWORD debe tener al menos 6 caracteres.");
         }
         Usuario dueno = new Usuario();
         dueno.setNegocioId(1L);

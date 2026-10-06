@@ -1,8 +1,17 @@
 const logoutButton = document.getElementById("logoutButton");
 
-logoutButton.addEventListener("click", function () { //este dice que cuando el usuario haga click se ejecute lo que esta andentro 
-        window.location.href = "login.html"; //este es para devolver de pagina al login
-});
+if (requerirSesion()) {
+    const usuarioSesion = obtenerUsuarioSesion();
+    document.querySelectorAll(".usuario-info strong, .dropdown-perfil strong").forEach(elemento => {
+        elemento.textContent = usuarioSesion.nombre;
+    });
+    document.querySelectorAll(".usuario-info .rol, .dropdown-perfil .rol, .usuario-info small, .dropdown-perfil small")
+        .forEach(elemento => {
+            elemento.textContent = usuarioSesion.rol;
+        });
+
+    logoutButton.addEventListener("click", () => cerrarSesion());
+}
 
  const btn = document.getElementById('usuarioBtn');
     const dropdown = document.getElementById('usuarioDropdown');

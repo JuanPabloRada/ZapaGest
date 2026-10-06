@@ -1,22 +1,37 @@
+const USAR_API_LOGIN = true;
 const loginForm = document.getElementById("loginForm");
-//busca el formulario que tiene el id loginForm en el html y lo guarda en la variable loginForm
+const loginMessage = document.getElementById("loginMessage");
+const loginButton = loginForm.querySelector('button[type="submit"]');
 
-loginForm.addEventListener("submit", function(event) {
-    //cuando alguien intente enviar el formulario ejecute esta funcion el evento que se manda es submit que es enviar 
+loginForm.addEventListener("submit", async event => {
+    event.preventDefault();
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value;
 
-    event.preventDefault(); // se le dice que no recargue la pagina cuando se envie el formulario ya que se nesecitan hacer validaciones antes de enviarlo
-
-    const username = document.getElementById("username").value; //se obtiene lo que escribio el usuario
-    const password = document.getElementById("password").value;//se obtiene la contraseña que puso el usuario
-
-    const loginMessage = document.getElementById("loginMessage"); //manda un mensaje
-
-    if (username === "" || password === "") {
+    if (!username || !password) {
         loginMessage.textContent = "Por favor, completa todos los campos.";
-        return; //se verifica que los campos no esten vacios si lo estan manda un mensaje y no hace nada mas
+        return;
     }
 
-    loginMessage.textContent = "Ingresando...";
-    window.location.href = "dashboard.html"; // temporal, luego se cambia por la llamada a la API
+    if (!USAR_API_LOGIN) {
+        loginMessage.textContent = "El inicio de sesión está deshabilitado.";
+        return;
+    }
 
+    loginButton.disabled = true;
+    loginMessage.textContent = "Ingresando...";
+    cerrarSesion(false);
+    try {
+        const sesion = await apiFetch("/auth/login", {
+            method: "POST",
+            body: JSON.stringify({ username, password }),
+        });
+        guardarSesion(sesion);
+        window.location.href = "dashboard.html";
+    } catch (error) {
+        cerrarSesion(false);
+        loginMessage.textContent = error.message;
+    } finally {
+        loginButton.disabled = false;
+    }
 });

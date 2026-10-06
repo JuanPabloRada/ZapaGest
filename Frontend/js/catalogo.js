@@ -1,8 +1,7 @@
 // ===== CONFIGURACIÓN =====
 // Las calidades ya existen en el backend; el catálogo todavía no.
-const USAR_API_CALIDADES = false;
-const USAR_API_MODELOS = false; // cámbialo a true cuando Joseph entregue /api/catalogo
-const API = "http://localhost:8080/api";
+const USAR_API_CALIDADES = true;
+const USAR_API_MODELOS = false; // Se activa cuando Joseph implemente /api/catalogo.
 
 // ===== ELEMENTOS DEL HTML =====
 const form = document.getElementById("modeloForm");
@@ -52,16 +51,12 @@ let modelos = [
 
 async function obtenerCalidades() {
     if (!USAR_API_CALIDADES) return calidades;
-    const res = await fetch(`${API}/calidades`);
-    if (!res.ok) throw new Error("No se pudieron cargar las calidades.");
-    return res.json();
+    return apiFetch("/calidades");
 }
 
 async function obtenerModelos() {
     if (!USAR_API_MODELOS) return modelos;
-    const res = await fetch(`${API}/catalogo`);
-    if (!res.ok) throw new Error("No se pudo cargar el catálogo.");
-    return res.json();
+    return apiFetch("/catalogo");
 }
 
 async function guardarModelo(datos) {
@@ -71,16 +66,10 @@ async function guardarModelo(datos) {
         return nuevo;
     }
 
-    const res = await fetch(`${API}/catalogo`, {
+    return apiFetch("/catalogo", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(datos),
     });
-    if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.mensaje || "No se pudo guardar el modelo.");
-    }
-    return res.json();
 }
 
 // ===== UTILIDADES =====
@@ -321,7 +310,7 @@ function leerPrecios() {
         const nombre = nombreCalidad(f.calidadId);
 
         if (f.costo === "" || f.precioMinimo === "" || f.precioVenta === "") {
-            return { error: `En "${nombre}" completa el costo, el precio mínimo y el precio de venta.` };
+            return { error: `En "${nombre}" completa el costo, el precio mínimo y el precio sugerido.` };
         }
 
         const costo = Number(f.costo);
@@ -395,7 +384,7 @@ async function dibujarModelos() {
                 .map(p => {
                     const cal = listaCalidades.find(c => c.id === p.calidadId);
                     return `<span class="precio-linea">${escapar(cal ? cal.nombre : "?")}: ` +
-                        `costo ${dinero(p.costo)} · mín. ${dinero(p.precioMinimo)} · venta ${dinero(p.precioVenta)}</span>`;
+                        `costo ${dinero(p.costo)} · mín. ${dinero(p.precioMinimo)} · sugerido ${dinero(p.precioSugerido ?? p.precioVenta)}</span>`;
                 })
                 .join("");
 
@@ -465,7 +454,12 @@ form.addEventListener("submit", async function (event) {
             categoria,
             colores: coloresElegidos,
             tallas: tallasElegidas,
-            precios: lectura.precios,
+            precios: lectura.precios.map(precio => ({
+                calidadId: precio.calidadId,
+                costo: precio.costo,
+                precioMinimo: precio.precioMinimo,
+                precioSugerido: precio.precioVenta,
+            })),
         });
 
         form.reset();

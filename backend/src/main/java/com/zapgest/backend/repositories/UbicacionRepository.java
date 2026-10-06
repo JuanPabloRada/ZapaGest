@@ -4,9 +4,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.zapgest.backend.models.Ubicacion;
 
+import java.util.List;
+import java.util.Optional;
+
 public interface UbicacionRepository extends JpaRepository<Ubicacion, Long> {
 
-    // Spring arma la consulta solo a partir del nombre del metodo:
-    // cuenta las ubicaciones de un negocio que tengan activa = true
     long countByNegocioIdAndActivaTrue(Long negocioId);
+
+    List<Ubicacion> findAllByNegocioId(Long negocioId);
+
+    Optional<Ubicacion> findByIdAndNegocioId(Long id, Long negocioId);
 }

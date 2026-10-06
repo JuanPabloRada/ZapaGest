@@ -1,8 +1,7 @@
 // ===== CONFIGURACIÓN =====
 const MAX_BODEGAS = 10;
 const MENSAJE_LIMITE = "Ha alcanzado el límite máximo permitido de 10 ubicaciones";
-const USAR_API = false; // true = usa el backend de Joseph; false = datos falsos
-const API = "http://localhost:8080/api";
+const USAR_API = true;
 
 // ===== ELEMENTOS DEL HTML =====
 const form = document.getElementById("bodegaForm");
@@ -26,7 +25,7 @@ let bodegas = [
 
 // Si el backend no envía "activo", se asume que la bodega está activa
 function esActiva(bodega) {
-    return bodega.activo !== false;
+    return bodega.activa !== false && bodega.activo !== false;
 }
 
 function contarActivas(lista) {
@@ -42,10 +41,7 @@ function limiteAlcanzado(lista) {
 
 async function obtenerBodegas() {
     if (!USAR_API) return bodegas;
-
-    const res = await fetch(`${API}/ubicaciones`);
-    if (!res.ok) throw new Error("No se pudieron cargar las bodegas.");
-    return res.json();
+    return apiFetch("/ubicaciones");
 }
 
 async function guardarBodega(datos) {
@@ -56,16 +52,10 @@ async function guardarBodega(datos) {
         return nueva;
     }
 
-    const res = await fetch(`${API}/ubicaciones`, {
+    return apiFetch("/ubicaciones", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(datos),
     });
-    if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.mensaje || "No se pudo crear la bodega.");
-    }
-    return res.json();
 }
 
 // Activa o desactiva una bodega.
@@ -77,16 +67,10 @@ async function cambiarEstadoBodega(id, activo) {
         return bodega;
     }
 
-    const res = await fetch(`${API}/ubicaciones/${id}`, {
+    return apiFetch(`/ubicaciones/${id}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ activo }),
+        body: JSON.stringify({ activa: activo }),
     });
-    if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.mensaje || "No se pudo cambiar el estado de la bodega.");
-    }
-    return res.json();
 }
 
 // ===== PANTALLA =====

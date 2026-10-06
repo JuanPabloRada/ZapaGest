@@ -43,7 +43,6 @@
     display: flex;       /* flex pero sin ocupar todo el ancho */
     align-items: center;
     justify-content: center;
-    margin:16px auto 0;
     gap: 8px;                   /* espacio entre ícono y texto */
     padding: 10px 16px;
     border: none;               /* quita el borde gris por defecto */
@@ -57,9 +56,16 @@
     transition: background 0.2s, transform 0.1s;
 }
 
-.panel button:hover {
-    background: #2563eb;        /* el mismo azul que usas en el resto */
+#guardarBtn {
+    margin: 16px auto 0;
 }
+
+.panel button:hover {
+    background: #2563eb;     /* el mismo azul que usas en el resto */
+    color: #fff;
+    
+}
+
 .panel-encabezado {
     display: flex;
     justify-content: space-between;

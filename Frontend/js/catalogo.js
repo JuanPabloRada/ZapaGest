@@ -231,12 +231,12 @@ function actualizarResumen() {
 
     if (c === 0 || t === 0 || q === 0) {
         resumenVariantes.textContent =
-            "Elige colores, tallas y al menos una calidad para ver cuántas variantes tendrá la referencia.";
+            "Elige colores, tallas y al menos una calidad para ver cuántas combinaciones tendrá la referencia.";
         return;
     }
     resumenVariantes.textContent =
         `${c} color${c > 1 ? "es" : ""} × ${t} talla${t > 1 ? "s" : ""} × ` +
-        `${q} calidad${q > 1 ? "es" : ""} = ${c * t * q} variantes`;
+        `${q} calidad${q > 1 ? "es" : ""} = ${c * t * q} combinaciones posibles (aún no se crean ni tienen stock)`;
 }
 
 // ===== CALIDADES Y PRECIOS =====

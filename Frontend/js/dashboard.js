@@ -13,6 +13,11 @@ if (requerirSesion()) {
     logoutButton.addEventListener("click", () => cerrarSesion());
 }
 
+    if (confirmar) {
+        cerrarSesion();                        // borra la sesión guardada
+        window.location.href = "login.html";   // vuelve al login
+    }
+});
  const btn = document.getElementById('usuarioBtn');
     const dropdown = document.getElementById('usuarioDropdown');
 
@@ -37,4 +42,6 @@ if (requerirSesion()) {
             dropdown.classList.remove('abierto');
             btn.setAttribute('aria-expanded', 'false');
         }
+    
+        
 });

@@ -17,7 +17,6 @@ if (requerirSesion()) {
         cerrarSesion();                        // borra la sesión guardada
         window.location.href = "login.html";   // vuelve al login
     }
-});
  const btn = document.getElementById('usuarioBtn');
     const dropdown = document.getElementById('usuarioDropdown');
 
@@ -45,3 +44,30 @@ if (requerirSesion()) {
     
         
 });
+// ===== MENÚ DESPLEGABLE DEL USUARIO =====
+(function () {
+    const usuarioBtn = document.getElementById("logoutButton");
+    const usuarioDropdown = document.getElementById("usuarioDropdown");
+    if (!usuarioBtn || !usuarioDropdown) return;
+
+    const CLASE_ABIERTO = "show"; // debe coincidir con tu CSS (ver paso 2)
+
+    function cerrarMenu() {
+        usuarioDropdown.classList.remove(CLASE_ABIERTO);
+        usuarioBtn.setAttribute("aria-expanded", "false");
+    }
+
+    usuarioBtn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        const abierto = usuarioDropdown.classList.toggle(CLASE_ABIERTO);
+        usuarioBtn.setAttribute("aria-expanded", String(abierto));
+    });
+
+    // Clic fuera del menú o tecla Escape lo cierran
+    document.addEventListener("click", function (e) {
+        if (!usuarioDropdown.contains(e.target)) cerrarMenu();
+    });
+    document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") cerrarMenu();
+    });
+})();

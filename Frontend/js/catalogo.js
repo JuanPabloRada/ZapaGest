@@ -111,6 +111,14 @@ function crearSelector(config) {
     };
 }
 
+// Tallas europeas: de 30 a 50, enteras o con media talla (38 o 38.5)
+function normalizarTalla(texto) {
+    const valor = texto.trim().replace(",", ".");
+    if (!/^\d{2}(\.5)?$/.test(valor)) return null;
+    const numero = Number(valor);
+    return numero >= 30 && numero <= 50 ? String(numero) : null;
+}
+
 const selColor = crearSelector({
     lista: colores,
     singular: "color",
@@ -125,6 +133,9 @@ const selTalla = crearSelector({
     lista: tallas,
     singular: "talla",
     placeholder: "Elige una talla",
+    ordenar: (a, b) => Number(a) - Number(b),
+    validar: normalizarTalla,
+    mensajeInvalido: "Usa una talla europea entre 30 y 50 (por ejemplo 38 o 38.5).",
     ids: {
         select: "selectTalla", tags: "tagsTallas", wrap: "nuevaTallaWrap",
         input: "nuevaTalla", btnAgregar: "btnAgregarTalla", btnCancelar: "btnCancelarTalla",
@@ -133,6 +144,7 @@ const selTalla = crearSelector({
 
 function dibujarSelector(s) {
     const { select, tags } = s.elementos;
+    if (s.ordenar) s.lista.sort(s.ordenar); // las tallas quedan en orden numérico
 
     s.elegidos.sort((x, y) => s.lista.indexOf(x) - s.lista.indexOf(y));
     const disponibles = s.lista.filter(v => !s.elegidos.includes(v));
@@ -158,12 +170,22 @@ function ocultarNuevo(s) {
 
 function agregarNuevo(s) {
     const { input } = s.elementos;
-    const valor = input.value.trim();
+    let valor = input.value.trim();
 
     if (valor === "") {
         mostrarMensaje(`Escribe el nombre del ${s.singular} que quieres añadir.`, "error");
         input.focus();
         return;
+    }
+
+    if (s.validar) {
+        const valido = s.validar(valor);
+        if (valido === null) {
+            mostrarMensaje(s.mensajeInvalido, "error");
+            input.focus();
+            return;
+        }
+        valor = valido; // por ejemplo "38,5" pasa a "38.5"
     }
 
     const existente = s.lista.find(v => v.toLowerCase() === valor.toLowerCase());
@@ -283,7 +305,7 @@ function dibujarFilasPrecios() {
                 <td><input type="number" min="0" step="1" data-campo="precioMinimo"
                     value="${escapar(f.precioMinimo)}" placeholder="0" aria-label="Precio mínimo ${nombre}"></td>
                 <td><input type="number" min="0" step="1" data-campo="precioVenta"
-                    value="${escapar(f.precioVenta)}" placeholder="0" aria-label="Precio de venta ${nombre}"></td>
+                    value="${escapar(f.precioVenta)}" placeholder="0" aria-label="Precio sugerido ${nombre}"></td>
                 <td><button type="button" class="quitar-fila" aria-label="Quitar ${nombre}">×</button></td>
             </tr>`;
         })
@@ -323,7 +345,7 @@ function leerPrecios() {
         if (precioMinimo < costo) {
             return { error: `En "${nombre}" el precio mínimo no puede ser menor que el costo.` };
         }
-        if (precioMinimo > precioVenta) {
+        if (precioMinimo > precioSugerido) {
             return { error: `En "${nombre}" el precio mínimo no puede ser mayor que el precio de venta.` };
         }
 

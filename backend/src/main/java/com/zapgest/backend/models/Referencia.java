@@ -44,12 +44,9 @@ public class Referencia {
     @Column(nullable = false, length = 100)
     private String nombre;
 
-    // Columnas nuevas: Rada debe agregarlas al script SQL
+    // Columna nueva: Rada debe agregarla al script SQL (solo marca, sin categoria)
     @Column(length = 60)
     private String marca;
-
-    @Column(length = 60)
-    private String categoria;
 
     private Boolean activa = true;
 

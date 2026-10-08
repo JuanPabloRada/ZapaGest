@@ -1,6 +1,7 @@
 package com.zapgest.backend.services;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -11,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.zapgest.backend.dto.catalogo.CatalogoRequest;
 import com.zapgest.backend.dto.catalogo.CatalogoResponse;
+import com.zapgest.backend.dto.catalogo.OpcionResponse;
 import com.zapgest.backend.dto.catalogo.PrecioRequest;
 import com.zapgest.backend.exceptions.ReferenciaDuplicadaException;
 import com.zapgest.backend.models.Calidad;
@@ -51,6 +53,22 @@ public class CatalogoService {
                 .toList();
     }
 
+    // Colores ya guardados del negocio (para los desplegables de la pantalla)
+    @Transactional(readOnly = true)
+    public List<OpcionResponse> listarColores() {
+        return colorRepository.findByNegocioIdOrderByNombreAsc(NEGOCIO_ID).stream()
+                .map(c -> new OpcionResponse(c.getId(), c.getNombre()))
+                .toList();
+    }
+
+    // Tallas europeas permitidas (34 a 46), en orden
+    @Transactional(readOnly = true)
+    public List<OpcionResponse> listarTallas() {
+        return tallaRepository.findAllByOrderByValorAsc().stream()
+                .map(t -> new OpcionResponse(t.getId(), t.comoTexto()))
+                .toList();
+    }
+
     @Transactional
     public CatalogoResponse crear(CatalogoRequest datos) {
         if (datos == null) {
@@ -61,17 +79,18 @@ public class CatalogoService {
         String codigo = obligatorio(datos.referencia(), "La referencia (código) es obligatoria.", 40);
         String nombre = obligatorio(datos.nombre(), "El nombre es obligatorio.", 100);
         String marca = opcional(datos.marca(), "La marca", 60);
-        String categoria = opcional(datos.categoria(), "La categoría", 60);
 
         // 2. Referencia unica dentro del negocio
         if (referenciaRepository.existsByNegocioIdAndCodigoIgnoreCase(NEGOCIO_ID, codigo)) {
             throw new ReferenciaDuplicadaException(codigo);
         }
 
-        // 3. Colores, tallas y precios (se validan antes de guardar nada)
-        Set<Color> colores = resolverColores(datos.colores());
+        // 3. Validar TODO antes de guardar nada.
+        //    Primero lo que solo se consulta (tallas, precios y calidades) y al final los
+        //    colores, porque un color nuevo si se guarda en la base.
         Set<Talla> tallas = resolverTallas(datos.tallas());
-        List<PrecioRequest> precios = validarPrecios(datos.precios());
+        List<PrecioConCalidad> precios = validarPrecios(datos.precios());
+        Set<Color> colores = resolverColores(datos.colores());
 
         // 4. Guardar la referencia
         Referencia referencia = new Referencia();
@@ -79,18 +98,15 @@ public class CatalogoService {
         referencia.setCodigo(codigo);
         referencia.setNombre(nombre);
         referencia.setMarca(marca);
-        referencia.setCategoria(categoria);
         referencia.setActiva(true);
         referencia.setColores(colores);
         referencia.setTallas(tallas);
         referencia = referenciaRepository.save(referencia);
 
-        // 5. Asociar cada precio con su calidad
-        for (PrecioRequest p : precios) {
-            Calidad calidad = calidadRepository.findById(p.calidadId())
-                    .filter(c -> NEGOCIO_ID.equals(c.getNegocioId()))
-                    .orElseThrow(() -> new IllegalArgumentException(
-                            "La calidad con id " + p.calidadId() + " no existe."));
+        // 5. Asociar cada precio con su calidad (ya validada en el paso 3)
+        for (PrecioConCalidad pc : precios) {
+            PrecioRequest p = pc.precio();
+            Calidad calidad = pc.calidad();
 
             ReferenciaCalidad rc = new ReferenciaCalidad();
             rc.setId(new ReferenciaCalidadId(referencia.getId(), calidad.getId()));
@@ -154,11 +170,16 @@ public class CatalogoService {
         return resultado;
     }
 
-    private List<PrecioRequest> validarPrecios(List<PrecioRequest> precios) {
+    // Un precio ya validado junto con su calidad (que existe y es del negocio)
+    private record PrecioConCalidad(PrecioRequest precio, Calidad calidad) {
+    }
+
+    private List<PrecioConCalidad> validarPrecios(List<PrecioRequest> precios) {
         if (precios == null || precios.isEmpty()) {
             throw new IllegalArgumentException("Agrega los precios de al menos una calidad.");
         }
         Set<Long> calidades = new HashSet<>();
+        List<PrecioConCalidad> resultado = new ArrayList<>();
         for (PrecioRequest p : precios) {
             if (p == null || p.calidadId() == null) {
                 throw new IllegalArgumentException("Cada precio debe indicar su calidad.");
@@ -172,8 +193,14 @@ public class CatalogoService {
             if (p.precioMinimo().compareTo(p.precioSugerido()) > 0) {
                 throw new IllegalArgumentException("El precio mínimo no puede ser mayor que el precio sugerido.");
             }
+            // La calidad debe existir y ser del negocio (se comprueba ANTES de guardar)
+            Calidad calidad = calidadRepository.findById(p.calidadId())
+                    .filter(c -> NEGOCIO_ID.equals(c.getNegocioId()))
+                    .orElseThrow(() -> new IllegalArgumentException(
+                            "La calidad con id " + p.calidadId() + " no existe."));
+            resultado.add(new PrecioConCalidad(p, calidad));
         }
-        return precios;
+        return resultado;
     }
 
     private void noNegativo(BigDecimal valor, String campo) {

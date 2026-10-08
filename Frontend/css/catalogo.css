@@ -321,3 +321,13 @@ button.quitar-fila:hover {
         justify-content: flex-end;
     }
 }
+
+.error-campo {
+    margin-top: 6px;
+    font-size: 14px;
+    color: #b42318;
+}
+
+.agregar-chip input.invalido {
+    border-color: #b42318;
+}

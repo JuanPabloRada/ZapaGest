@@ -90,6 +90,7 @@ function crearSelector(config) {
             input: document.getElementById(config.ids.input),
             btnAgregar: document.getElementById(config.ids.btnAgregar),
             btnCancelar: document.getElementById(config.ids.btnCancelar),
+                        error: document.getElementById(config.ids.error),
         },
         elegidos: [],
     };
@@ -109,7 +110,8 @@ const selColor = crearSelector({
     placeholder: "Elige un color",
     ids: {
         select: "selectColor", tags: "tagsColores", wrap: "nuevoColorWrap",
-        input: "nuevoColor", btnAgregar: "btnAgregarColor", btnCancelar: "btnCancelarColor",
+        input: "nuevoColor", btnAgregar: "btnAgregarColor", btnCancelar: "btnCancelarColor",input: "nuevoColor", btnAgregar: "btnAgregarColor", btnCancelar: "btnCancelarColor",
+        error: "errorNuevoColor",
     },
 });
 
@@ -122,7 +124,8 @@ const selTalla = crearSelector({
     mensajeInvalido: "Usa una talla europea entre 34 y 46, de media en media (por ejemplo 38 o 38.5).",
     ids: {
         select: "selectTalla", tags: "tagsTallas", wrap: "nuevaTallaWrap",
-        input: "nuevaTalla", btnAgregar: "btnAgregarTalla", btnCancelar: "btnCancelarTalla",
+        input: "nuevaTalla", btnAgregar: "btnAgregarTalla", btnCancelar: "btnCancelarTalla", input: "nuevaTalla", btnAgregar: "btnAgregarTalla", btnCancelar: "btnCancelarTalla",
+        error: "errorNuevaTalla",
     },
 });
 
@@ -147,9 +150,17 @@ function dibujarSelector(s) {
     actualizarResumen();
 }
 
+function mostrarErrorCampo(s, texto) {
+    const { error, input } = s.elementos;
+    error.textContent = texto;
+    error.hidden = texto === "";
+    input.classList.toggle("invalido", texto !== "");
+}
+
 function ocultarNuevo(s) {
     s.elementos.wrap.hidden = true;
     s.elementos.input.value = "";
+    mostrarErrorCampo(s, "");
 }
 
 function agregarNuevo(s) {
@@ -157,7 +168,7 @@ function agregarNuevo(s) {
     let valor = input.value.trim();
 
     if (valor === "") {
-        mostrarMensaje(`Escribe el nombre del ${s.singular} que quieres añadir.`, "error");
+        mostrarErrorCampo(s, `Escribe el nombre del ${s.singular} que quieres añadir.`);
         input.focus();
         return;
     }
@@ -165,7 +176,7 @@ function agregarNuevo(s) {
     if (s.validar) {
         const valido = s.validar(valor);
         if (valido === null) {
-            mostrarMensaje(s.mensajeInvalido, "error");
+            mostrarErrorCampo(s, `"${valor}" no es una ${s.singular} válida. ${s.mensajeInvalido}`);
             input.focus();
             return;
         }
@@ -217,6 +228,8 @@ function conectarSelector(s) {
             agregarNuevo(s);
         }
     });
+
+    input.addEventListener("input", () => mostrarErrorCampo(s, ""));
 }
 
 function limpiarSelecciones() {

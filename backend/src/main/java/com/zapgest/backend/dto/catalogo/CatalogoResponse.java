@@ -13,7 +13,6 @@ public record CatalogoResponse(
         String referencia,
         String nombre,
         String marca,
-        String categoria,
         List<String> colores,
         List<String> tallas,
         List<PrecioResponse> precios,
@@ -38,6 +37,6 @@ public record CatalogoResponse(
                 .sorted(Comparator.comparing(PrecioResponse::calidadId))
                 .toList();
         return new CatalogoResponse(r.getId(), r.getCodigo(), r.getNombre(), r.getMarca(),
-                r.getCategoria(), colores, tallas, precios, r.getActiva());
+                colores, tallas, precios, r.getActiva());
     }
 }

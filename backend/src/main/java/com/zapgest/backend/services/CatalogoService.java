@@ -79,7 +79,6 @@ public class CatalogoService {
         String codigo = obligatorio(datos.referencia(), "La referencia (código) es obligatoria.", 40);
         String nombre = obligatorio(datos.nombre(), "El nombre es obligatorio.", 100);
         String marca = opcional(datos.marca(), "La marca", 60);
-        String categoria = opcional(datos.categoria(), "La categoría", 60);
 
         // 2. Referencia unica dentro del negocio
         if (referenciaRepository.existsByNegocioIdAndCodigoIgnoreCase(NEGOCIO_ID, codigo)) {
@@ -99,7 +98,6 @@ public class CatalogoService {
         referencia.setCodigo(codigo);
         referencia.setNombre(nombre);
         referencia.setMarca(marca);
-        referencia.setCategoria(categoria);
         referencia.setActiva(true);
         referencia.setColores(colores);
         referencia.setTallas(tallas);

@@ -103,13 +103,14 @@ class CatalogoServiceTest {
     }
 
     private CatalogoRequest valida() {
-        return new CatalogoRequest("AF1-001", "Nike Air Force", "Nike", "Tenis",
+        return new CatalogoRequest("AF1-001", "Nike Air Force", "Nike",
                 List.of("Blanco", "Negro"), List.of("38", "38.5"), preciosValidos());
     }
 
-    private CatalogoRequest con(String referencia, String nombre, String marca, String categoria,
+    // El 4o parametro era la categoria: ya no existe (solo se guarda la marca) y se ignora.
+    private CatalogoRequest con(String referencia, String nombre, String marca, String sinUso,
             List<String> colores, List<String> tallas, List<PrecioRequest> precios) {
-        return new CatalogoRequest(referencia, nombre, marca, categoria, colores, tallas, precios);
+        return new CatalogoRequest(referencia, nombre, marca, colores, tallas, precios);
     }
 
     private Referencia referenciaGuardada() {
@@ -135,7 +136,6 @@ class CatalogoServiceTest {
         assertThat(r.referencia()).isEqualTo("AF1-001");
         assertThat(r.nombre()).isEqualTo("Nike Air Force");
         assertThat(r.marca()).isEqualTo("Nike");
-        assertThat(r.categoria()).isEqualTo("Tenis");
         assertThat(r.activa()).isTrue();
         assertThat(r.colores()).containsExactly("Blanco", "Negro");
         assertThat(r.tallas()).containsExactly("38", "38.5");
@@ -176,12 +176,11 @@ class CatalogoServiceTest {
     }
 
     @Test
-    void marcaYCategoriaSonOpcionales() {
+    void laMarcaEsOpcional() {
         service.crear(con("X-1", "Modelo", " ", null, List.of("Negro"), List.of("40"), preciosValidos()));
 
         Referencia guardada = referenciaGuardada();
         assertThat(guardada.getMarca()).isNull();
-        assertThat(guardada.getCategoria()).isNull();
     }
 
     @Test
@@ -221,7 +220,6 @@ class CatalogoServiceTest {
         assertRechaza(con("x".repeat(41), "N", null, null, List.of("Negro"), List.of("40"), preciosValidos()), "40");
         assertRechaza(con("A-1", "x".repeat(101), null, null, List.of("Negro"), List.of("40"), preciosValidos()), "100");
         assertRechaza(con("A-1", "N", "x".repeat(61), null, List.of("Negro"), List.of("40"), preciosValidos()), "60");
-        assertRechaza(con("A-1", "N", null, "x".repeat(61), List.of("Negro"), List.of("40"), preciosValidos()), "60");
     }
 
     // ---------- colores ----------

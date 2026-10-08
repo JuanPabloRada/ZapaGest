@@ -1,7 +1,6 @@
 // ===== CONFIGURACIÓN =====
-// Las calidades ya existen en el backend; el catálogo todavía no.
 const USAR_API_CALIDADES = true;
-const USAR_API_MODELOS = true; // Se activa cuando Joseph implemente /api/catalogo.
+const USAR_API_MODELOS = true; // Joseph ya implementó /api/catalogo.
 
 // ===== ELEMENTOS DEL HTML =====
 const form = document.getElementById("modeloForm");
@@ -20,30 +19,8 @@ const tbodyModelos = document.querySelector("#tablaModelos tbody");
 const textoVacio = document.getElementById("vacio");
 const buscador = document.getElementById("searchInput");
 
-// ===== DATOS FALSOS (se usan mientras no exista la API) =====
-let calidades = [
-    { id: 1, nombre: "Original" },
-    { id: 2, nombre: "1.1" },
-    { id: 3, nombre: "AAA" },
-];
-let colores = ["Negro", "Blanco", "Rojo", "Azul", "Gris"];
-let tallas = Array.from({ length: 25 }, (_, i) => String(34 + i * 0.5));
-let modelos = [
-    {
-        id: 1,
-        referencia: "AF1-001",
-        nombre: "Nike Air Force",
-        marca: "Nike",
-        colores: ["Blanco", "Negro"],
-        tallas: ["38", "39", "40", "41"],
-        precios: [
-            { calidadId: 1, costo: 250000, precioMinimo: 330000, precioVenta: 380000 },
-            { calidadId: 3, costo: 120000, precioMinimo: 160000, precioVenta: 190000 },
-        ],
-    },
-];
-
 // ===== ACCESO A DATOS (API) =====
+// apiFetch (definida en otro archivo) ya agrega el token.
 function obtenerCalidades() {
     return apiFetch("/calidades");
 }
@@ -54,6 +31,14 @@ function obtenerModelos() {
 
 function guardarModelo(datos) {
     return apiFetch("/catalogo", { method: "POST", body: JSON.stringify(datos) });
+}
+
+function obtenerTallas() {
+    return apiFetch("/tallas"); // [{ id: 1, nombre: "34" }, { id: 2, nombre: "34.5" }, ...]
+}
+
+function obtenerColores() {
+    return apiFetch("/colores"); // [{ id: 1, nombre: "Blanco" }, ...]
 }
 
 // ===== UTILIDADES =====
@@ -76,58 +61,63 @@ function dinero(numero) {
 
 // ===== DESPLEGABLES DE COLORES Y TALLAS =====
 // Cada desplegable agrega el valor elegido como etiqueta (se pueden elegir varios).
-// La última opción, "Añadir otro...", muestra un campo para crear uno nuevo.
+// Colores: la última opción, "Añadir otro...", muestra un campo para crear uno nuevo
+//          (el backend lo crea al guardar el modelo).
+// Tallas: solo se pueden elegir las que vienen del backend.
 
 const OPCION_NUEVO = "__nuevo__";
 
 function crearSelector(config) {
+    const el = id => (id ? document.getElementById(id) : null);
+    const ids = config.ids;
     return {
         ...config,
+        lista: [], // se llena desde la API
         elementos: {
-            select: document.getElementById(config.ids.select),
-            tags: document.getElementById(config.ids.tags),
-            wrap: document.getElementById(config.ids.wrap),
-            input: document.getElementById(config.ids.input),
-            btnAgregar: document.getElementById(config.ids.btnAgregar),
-            btnCancelar: document.getElementById(config.ids.btnCancelar),
-                        error: document.getElementById(config.ids.error),
+            select: el(ids.select),
+            tags: el(ids.tags),
+            wrap: el(ids.wrap),
+            input: el(ids.input),
+            btnAgregar: el(ids.btnAgregar),
+            btnCancelar: el(ids.btnCancelar),
+            error: el(ids.error),
         },
         elegidos: [],
     };
 }
 
-// Tallas europeas que acepta el backend: de 34 a 46, de media en media (38 o 38.5)
-function normalizarTalla(texto) {
-    const valor = texto.trim().replace(",", ".");
-    if (!/^\d{2}(\.5)?$/.test(valor)) return null;
-    const numero = Number(valor);
-    return numero >= 34 && numero <= 46 ? String(numero) : null;
-}
-
 const selColor = crearSelector({
-    lista: colores,
     singular: "color",
     placeholder: "Elige un color",
+    permiteNuevo: true,
     ids: {
         select: "selectColor", tags: "tagsColores", wrap: "nuevoColorWrap",
-        input: "nuevoColor", btnAgregar: "btnAgregarColor", btnCancelar: "btnCancelarColor",input: "nuevoColor", btnAgregar: "btnAgregarColor", btnCancelar: "btnCancelarColor",
+        input: "nuevoColor", btnAgregar: "btnAgregarColor", btnCancelar: "btnCancelarColor",
         error: "errorNuevoColor",
     },
 });
 
 const selTalla = crearSelector({
-    lista: tallas,
     singular: "talla",
     placeholder: "Elige una talla",
+    permiteNuevo: false, // las tallas las crea el backend al arrancar
     ordenar: (a, b) => Number(a) - Number(b),
-    validar: normalizarTalla,
-    mensajeInvalido: "Usa una talla europea entre 34 y 46, de media en media (por ejemplo 38 o 38.5).",
     ids: {
-        select: "selectTalla", tags: "tagsTallas", wrap: "nuevaTallaWrap",
-        input: "nuevaTalla", btnAgregar: "btnAgregarTalla", btnCancelar: "btnCancelarTalla", input: "nuevaTalla", btnAgregar: "btnAgregarTalla", btnCancelar: "btnCancelarTalla",
-        error: "errorNuevaTalla",
+        select: "selectTalla", tags: "tagsTallas",
     },
 });
+
+async function cargarTallasYColores() {
+    const [tallasApi, coloresApi] = await Promise.all([
+        obtenerTallas(),
+        obtenerColores(),
+    ]);
+    // Se reemplaza el contenido de la lista (no la referencia) y se redibuja
+    selTalla.lista = tallasApi.map(t => String(t.nombre));
+    selColor.lista = coloresApi.map(c => c.nombre);
+    dibujarSelector(selTalla);
+    dibujarSelector(selColor);
+}
 
 function dibujarSelector(s) {
     const { select, tags } = s.elementos;
@@ -139,7 +129,7 @@ function dibujarSelector(s) {
     select.innerHTML =
         `<option value="">${s.placeholder}</option>` +
         disponibles.map(v => `<option value="${escapar(v)}">${escapar(v)}</option>`).join("") +
-        `<option value="${OPCION_NUEVO}">➕ Añadir otro...</option>`;
+        (s.permiteNuevo ? `<option value="${OPCION_NUEVO}">➕ Añadir otro...</option>` : "");
     select.value = "";
 
     tags.innerHTML = s.elegidos
@@ -152,35 +142,28 @@ function dibujarSelector(s) {
 
 function mostrarErrorCampo(s, texto) {
     const { error, input } = s.elementos;
+    if (!error || !input) return;
     error.textContent = texto;
     error.hidden = texto === "";
     input.classList.toggle("invalido", texto !== "");
 }
 
 function ocultarNuevo(s) {
+    if (!s.permiteNuevo) return;
     s.elementos.wrap.hidden = true;
     s.elementos.input.value = "";
     mostrarErrorCampo(s, "");
 }
 
 function agregarNuevo(s) {
+    if (!s.permiteNuevo) return;
     const { input } = s.elementos;
-    let valor = input.value.trim();
+    const valor = input.value.trim();
 
     if (valor === "") {
         mostrarErrorCampo(s, `Escribe el nombre del ${s.singular} que quieres añadir.`);
         input.focus();
         return;
-    }
-
-    if (s.validar) {
-        const valido = s.validar(valor);
-        if (valido === null) {
-            mostrarErrorCampo(s, `"${valor}" no es una ${s.singular} válida. ${s.mensajeInvalido}`);
-            input.focus();
-            return;
-        }
-        valor = valido; // por ejemplo "38,5" pasa a "38.5"
     }
 
     const existente = s.lista.find(v => v.toLowerCase() === valor.toLowerCase());
@@ -217,6 +200,8 @@ function conectarSelector(s) {
         s.elegidos.splice(Number(boton.dataset.i), 1);
         dibujarSelector(s);
     });
+
+    if (!s.permiteNuevo) return;
 
     btnAgregar.addEventListener("click", () => agregarNuevo(s));
     btnCancelar.addEventListener("click", () => ocultarNuevo(s));
@@ -394,7 +379,7 @@ async function dibujarModelos() {
 
     const filtro = buscador.value.trim().toLowerCase();
     const visibles = listaModelos.filter(m =>
-        [m.referencia, m.nombre, m.marca].some(t => t.toLowerCase().includes(filtro))
+        [m.referencia, m.nombre, m.marca].some(t => (t ?? "").toLowerCase().includes(filtro))
     );
 
     tbodyModelos.innerHTML = visibles
@@ -435,7 +420,7 @@ form.addEventListener("submit", async function (event) {
     const coloresElegidos = [...selColor.elegidos];
     const tallasElegidas = [...selTalla.elegidos];
 
-    if (!referencia || !nombre || !marca ) {
+    if (!referencia || !nombre || !marca) {
         mostrarMensaje("Completa referencia, nombre y marca.", "error");
         return;
     }
@@ -456,14 +441,8 @@ form.addEventListener("submit", async function (event) {
 
     botonGuardar.disabled = true; // evita doble clic
     try {
-        const existe = (await obtenerModelos()).some(
-            m => m.referencia.toLowerCase() === referencia.toLowerCase()
-        );
-        if (existe) {
-            mostrarMensaje("Ya existe un modelo con esa referencia.", "error");
-            return;
-        }
-
+        // La validación de referencia repetida la hace el backend
+        // ("Ya existe una referencia con el código…") y se muestra en el catch.
         await guardarModelo({
             referencia,
             nombre,
@@ -483,6 +462,7 @@ form.addEventListener("submit", async function (event) {
         filasPrecios = [];
         dibujarFilasPrecios();
         await cargarCalidades();
+        await cargarTallasYColores(); // por si el backend creó un color nuevo
         mostrarMensaje("Modelo guardado con stock en 0.", "ok");
         await dibujarModelos();
     } catch (e) {
@@ -499,6 +479,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     dibujarSelector(selColor);
     dibujarSelector(selTalla);
     try {
+        await cargarTallasYColores();
         await cargarCalidades();
         dibujarFilasPrecios();
         await dibujarModelos();

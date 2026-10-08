@@ -25,7 +25,9 @@ El login devuelve un JWT con una expiración de ocho horas. El cliente web lo ma
 - `GET /api/calidades` requiere autenticación; `POST /api/calidades` requiere `DUENO`.
 - `GET /api/ubicaciones` requiere autenticación. `POST /api/ubicaciones` y `PATCH /api/ubicaciones/{id}` requieren `DUENO` o `ADMIN`; el PATCH recibe `{ "activa": true }` o `{ "activa": false }`.
 - `GET /api/catalogo/**` requiere autenticación y `POST /api/catalogo/**` requiere `DUENO` o `ADMIN` (la regla ya está en `SeguridadConfig`; los endpoints los implementa Joseph).
-- El catálogo aún no tiene persistencia ni endpoints en el backend. Cuando Joseph los implemente, el precio enviado por el formulario como `precioVenta` se mapeará al campo persistido `precioSugerido`.
+- `GET` y `POST /api/catalogo` ya existen en el backend. El formulario envía `referencia`, `nombre`, `marca`, `categoria`, `colores`, `tallas` y `precios` (`calidadId`, `costo`, `precioMinimo`, `precioSugerido`); el precio de venta de la pantalla se envía como `precioSugerido`. Las tallas válidas son las europeas de 34 a 46 (de 0.5 en 0.5).
+- `POST /api/calidades` solo toma el `nombre` (se recortan espacios, máximo 50 caracteres, no se permiten repetidos sin distinguir mayúsculas). Cualquier `id`, `negocioId` o `activa` enviado se ignora.
+- Al arrancar, el backend crea las tallas europeas (34 a 46) en la tabla `talla` si faltan; no hace falta cargarlas a mano.
 
 
 ## Base de datos y primer arranque
@@ -51,6 +53,7 @@ Pruebas automáticas (no necesitan PostgreSQL ni variables de entorno):
 
 - `UbicacionServiceTest`: regla de las 10 ubicaciones activas (crear, desactivar, reactivar) y aislamiento por negocio.
 - `PermisosApiTest`: autenticación y permisos reales (`SeguridadConfig` + filtro JWT) con los controladores: 401 sin token/token inválido/expirado/usuario inactivo, 403 por rol, forma del login y CORS.
+- `CalidadServiceTest`, `CatalogoServiceTest` y `SembradoTallasTest`: reglas de calidades, de registro de referencias (HU-05) y siembra de tallas.
 - `JwtServiceTest`: emisión y lectura del token.
 - `BackendApplicationTests`: arranque completo; solo se ejecuta si `JWT_SECRET` está definida y hay PostgreSQL.
 

@@ -25,7 +25,7 @@ let bodegas = [
 
 // Si el backend no envía "activo", se asume que la bodega está activa
 function esActiva(bodega) {
-    return bodega.activa !== false && bodega.activo !== false;
+    return bodega.activa !== false && bodega.activa !== false;
 }
 
 function contarActivas(lista) {
@@ -69,7 +69,7 @@ async function cambiarEstadoBodega(id, activo) {
 
     return apiFetch(`/ubicaciones/${id}`, {
         method: "PATCH",
-        body: JSON.stringify({ activa: activo }),
+        body: JSON.stringify({ activa: true }),
     });
 }
 

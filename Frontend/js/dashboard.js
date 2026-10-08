@@ -9,11 +9,7 @@ const logoutButton = document.getElementById("logoutButton");
 
 if (logoutButton) {
     logoutButton.addEventListener("click", function () {
-        const confirmar = confirm("¿Quieres cerrar sesión?");
-
-        if (confirmar) {
-            cerrarSesion(); // borra la sesión y redirige a login.html
-        }
+         cerrarSesion(); // borra la sesión y redirige a login.html
     });
 }
 

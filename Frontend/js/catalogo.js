@@ -1,14 +1,13 @@
 // ===== CONFIGURACIÓN =====
 // Las calidades ya existen en el backend; el catálogo todavía no.
 const USAR_API_CALIDADES = true;
-const USAR_API_MODELOS = false; // Se activa cuando Joseph implemente /api/catalogo.
+const USAR_API_MODELOS = true; // Se activa cuando Joseph implemente /api/catalogo.
 
 // ===== ELEMENTOS DEL HTML =====
 const form = document.getElementById("modeloForm");
 const inputReferencia = document.getElementById("referencia");
 const inputNombre = document.getElementById("nombre");
 const inputMarca = document.getElementById("marca");
-const inputCategoria = document.getElementById("categoria");
 const resumenVariantes = document.getElementById("resumenVariantes");
 const selectCalidad = document.getElementById("selectCalidad");
 const tablaPrecios = document.getElementById("tablaPrecios");
@@ -28,14 +27,13 @@ let calidades = [
     { id: 3, nombre: "AAA" },
 ];
 let colores = ["Negro", "Blanco", "Rojo", "Azul", "Gris"];
-let tallas = ["35", "36", "37", "38", "39", "40", "41", "42", "43", "44"];
+let tallas = Array.from({ length: 25 }, (_, i) => String(34 + i * 0.5));
 let modelos = [
     {
         id: 1,
         referencia: "AF1-001",
         nombre: "Nike Air Force",
         marca: "Nike",
-        categoria: "Tenis",
         colores: ["Blanco", "Negro"],
         tallas: ["38", "39", "40", "41"],
         precios: [
@@ -45,31 +43,17 @@ let modelos = [
     },
 ];
 
-// ===== ACCESO A DATOS =====
-// Estas funciones son las únicas que cambian cuando llegue la API.
-// Confirma las rutas y los nombres de campos con el contrato de Joseph.
-
-async function obtenerCalidades() {
-    if (!USAR_API_CALIDADES) return calidades;
+// ===== ACCESO A DATOS (API) =====
+function obtenerCalidades() {
     return apiFetch("/calidades");
 }
 
-async function obtenerModelos() {
-    if (!USAR_API_MODELOS) return modelos;
+function obtenerModelos() {
     return apiFetch("/catalogo");
 }
 
-async function guardarModelo(datos) {
-    if (!USAR_API_MODELOS) {
-        const nuevo = { id: Date.now(), ...datos };
-        modelos.push(nuevo);
-        return nuevo;
-    }
-
-    return apiFetch("/catalogo", {
-        method: "POST",
-        body: JSON.stringify(datos),
-    });
+function guardarModelo(datos) {
+    return apiFetch("/catalogo", { method: "POST", body: JSON.stringify(datos) });
 }
 
 // ===== UTILIDADES =====
@@ -111,12 +95,12 @@ function crearSelector(config) {
     };
 }
 
-// Tallas europeas: de 30 a 50, enteras o con media talla (38 o 38.5)
+// Tallas europeas que acepta el backend: de 34 a 46, de media en media (38 o 38.5)
 function normalizarTalla(texto) {
     const valor = texto.trim().replace(",", ".");
     if (!/^\d{2}(\.5)?$/.test(valor)) return null;
     const numero = Number(valor);
-    return numero >= 30 && numero <= 50 ? String(numero) : null;
+    return numero >= 34 && numero <= 46 ? String(numero) : null;
 }
 
 const selColor = crearSelector({
@@ -135,7 +119,7 @@ const selTalla = crearSelector({
     placeholder: "Elige una talla",
     ordenar: (a, b) => Number(a) - Number(b),
     validar: normalizarTalla,
-    mensajeInvalido: "Usa una talla europea entre 30 y 50 (por ejemplo 38 o 38.5).",
+    mensajeInvalido: "Usa una talla europea entre 34 y 46, de media en media (por ejemplo 38 o 38.5).",
     ids: {
         select: "selectTalla", tags: "tagsTallas", wrap: "nuevaTallaWrap",
         input: "nuevaTalla", btnAgregar: "btnAgregarTalla", btnCancelar: "btnCancelarTalla",
@@ -345,8 +329,8 @@ function leerPrecios() {
         if (precioMinimo < costo) {
             return { error: `En "${nombre}" el precio mínimo no puede ser menor que el costo.` };
         }
-        if (precioMinimo > precioSugerido) {
-            return { error: `En "${nombre}" el precio mínimo no puede ser mayor que el precio de venta.` };
+        if (precioMinimo > precioVenta) {
+            return { error: `En "${nombre}" el precio mínimo no puede ser mayor que el precio sugerido.` };
         }
 
         precios.push({ calidadId: f.calidadId, costo, precioMinimo, precioVenta });
@@ -405,8 +389,8 @@ async function dibujarModelos() {
             const precios = m.precios
                 .map(p => {
                     const cal = listaCalidades.find(c => c.id === p.calidadId);
-                    return `<span class="precio-linea">${escapar(cal ? cal.nombre : "?")}: ` +
-                        `costo ${dinero(p.costo)} · mín. ${dinero(p.precioMinimo)} · sugerido ${dinero(p.precioSugerido ?? p.precioVenta)}</span>`;
+                    return `<span class="precio-linea">${escapar(p.calidad ?? (cal ? cal.nombre : "?"))}: ` +
+                        `costo ${dinero(p.costo)} · mín. ${dinero(p.precioMinimo)} · sugerido ${dinero(p.precioSugerido)}</span>`;
                 })
                 .join("");
 
@@ -414,7 +398,6 @@ async function dibujarModelos() {
                 <td>${escapar(m.referencia)}</td>
                 <td>${escapar(m.nombre)}</td>
                 <td>${escapar(m.marca)}</td>
-                <td>${escapar(m.categoria)}</td>
                 <td>${m.colores.length} × ${m.tallas.length} × ${m.precios.length} = ${m.colores.length * m.tallas.length * m.precios.length}</td>
                 <td>${precios}</td>
             </tr>`;
@@ -436,12 +419,11 @@ form.addEventListener("submit", async function (event) {
     const referencia = inputReferencia.value.trim();
     const nombre = inputNombre.value.trim();
     const marca = inputMarca.value.trim();
-    const categoria = inputCategoria.value.trim();
     const coloresElegidos = [...selColor.elegidos];
     const tallasElegidas = [...selTalla.elegidos];
 
-    if (!referencia || !nombre || !marca || !categoria) {
-        mostrarMensaje("Completa referencia, nombre, marca y categoría.", "error");
+    if (!referencia || !nombre || !marca ) {
+        mostrarMensaje("Completa referencia, nombre y marca.", "error");
         return;
     }
     if (coloresElegidos.length === 0) {
@@ -473,7 +455,6 @@ form.addEventListener("submit", async function (event) {
             referencia,
             nombre,
             marca,
-            categoria,
             colores: coloresElegidos,
             tallas: tallasElegidas,
             precios: lectura.precios.map(precio => ({

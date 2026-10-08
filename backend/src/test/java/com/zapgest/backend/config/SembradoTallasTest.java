@@ -1,4 +1,4 @@
-package com.zapgest.backend;
+package com.zapgest.backend.config;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;

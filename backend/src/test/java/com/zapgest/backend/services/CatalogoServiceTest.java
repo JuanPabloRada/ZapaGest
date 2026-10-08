@@ -24,6 +24,7 @@ import org.mockito.quality.Strictness;
 
 import com.zapgest.backend.dto.catalogo.CatalogoRequest;
 import com.zapgest.backend.dto.catalogo.CatalogoResponse;
+import com.zapgest.backend.dto.catalogo.OpcionResponse;
 import com.zapgest.backend.dto.catalogo.PrecioRequest;
 import com.zapgest.backend.exceptions.ReferenciaDuplicadaException;
 import com.zapgest.backend.models.Calidad;
@@ -336,21 +337,31 @@ class CatalogoServiceTest {
         assertThat(r.precios()).extracting(p -> p.precioSugerido().intValue()).containsExactly(300, 120);
     }
 
-    // Nota: el servicio busca las calidades DESPUES de guardar la referencia y se apoya en que
-    // crear() es @Transactional para deshacerlo todo al lanzar la excepcion. Por eso aqui solo se
-    // comprueba el rechazo (la reversion real solo se puede verificar con la base de datos).
+    // Las calidades se validan ANTES de guardar: si una no existe (o es de otro negocio)
+    // no se guarda la referencia ni se crean colores nuevos.
     @Test
-    void rechazaUnaCalidadQueNoExiste() {
+    void rechazaUnaCalidadQueNoExisteSinGuardarNada() {
         assertThatThrownBy(() -> service.crear(unPrecio(precio(5L, "1", "2", "3"))))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("no existe");
+        verify(referenciaRepository, never()).save(any());
+        verify(referenciaRepository, never()).saveAndFlush(any());
+        verify(colorRepository, never()).save(any());
     }
 
     @Test
-    void rechazaUnaCalidadDeOtroNegocio() {
+    void rechazaUnaCalidadDeOtroNegocioSinGuardarNada() {
         assertThatThrownBy(() -> service.crear(unPrecio(precio(9L, "1", "2", "3"))))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("no existe");
+        verify(referenciaRepository, never()).save(any());
+        verify(colorRepository, never()).save(any());
+    }
+
+    @Test
+    void unaTallaInvalidaTampocoCreaColoresNuevos() {
+        assertRechaza(con("A-1", "N", null, null, List.of("Fucsia"), List.of("50"), preciosValidos()), "no es válida");
+        verify(colorRepository, never()).save(any());
     }
 
     private CatalogoRequest unPrecio(PrecioRequest p) {
@@ -375,5 +386,30 @@ class CatalogoServiceTest {
         assertThat(lista.get(0).referencia()).isEqualTo("AF1-001");
         assertThat(lista.get(0).colores()).isEmpty();
         verify(referenciaRepository, never()).findAll();
+    }
+
+    // ---------- listas para los desplegables ----------
+
+    @Test
+    void listaLosColoresDelNegocioComoOpciones() {
+        Color blanco = new Color();
+        blanco.setId(4L);
+        blanco.setNegocioId(1L);
+        blanco.setNombre("Blanco");
+        when(colorRepository.findByNegocioIdOrderByNombreAsc(1L)).thenReturn(List.of(blanco));
+
+        assertThat(service.listarColores()).containsExactly(new OpcionResponse(4L, "Blanco"));
+    }
+
+    @Test
+    void listaLasTallasComoTextoSinCerosDeSobra() {
+        when(tallaRepository.findAllByOrderByValorAsc()).thenReturn(tablaTallas);
+
+        List<OpcionResponse> tallas = service.listarTallas();
+
+        assertThat(tallas).hasSize(25);
+        assertThat(tallas.get(0).nombre()).isEqualTo("34");
+        assertThat(tallas.get(1).nombre()).isEqualTo("34.5");
+        assertThat(tallas.get(24).nombre()).isEqualTo("46");
     }
 }

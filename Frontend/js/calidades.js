@@ -1,3 +1,6 @@
+const tienePermiso = requerirRol("DUENO");
+if (!tienePermiso) document.querySelector(".dashboard").hidden = true;
+
 // ===== CONFIGURACIÓN =====
 const USAR_API = true;
 

@@ -1,3 +1,6 @@
+const tienePermiso = requerirRol("DUENO", "ADMIN");
+if (!tienePermiso) document.querySelector(".dashboard").hidden = true;
+
 // ===== CONFIGURACIÓN =====
 const MAX_BODEGAS = 10;
 const MENSAJE_LIMITE = "Ha alcanzado el límite máximo permitido de 10 ubicaciones";
@@ -69,7 +72,7 @@ async function cambiarEstadoBodega(id, activo) {
 
     return apiFetch(`/ubicaciones/${id}`, {
         method: "PATCH",
-        body: JSON.stringify({ activa: true }),
+        body: JSON.stringify({ activa: activo }),
     });
 }
 

@@ -1,3 +1,8 @@
+// ===== PERMISOS =====
+// Si el rol no puede entrar, requerirRol redirige al dashboard (igual que usuarios.js).
+const tienePermiso = requerirRol("DUENO", "ADMIN");
+if (!tienePermiso) document.querySelector(".dashboard").hidden = true;
+
 // ===== CONFIGURACIÓN =====
 const USAR_API_CALIDADES = true;
 const USAR_API_MODELOS = true; // Joseph ya implementó /api/catalogo.

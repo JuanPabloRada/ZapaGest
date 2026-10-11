@@ -250,16 +250,15 @@ button.quitar-fila {
     height: 28px;
     padding: 0;
     margin: 0;                    /* por si hereda el margin auto de .panel button */
-    border: 1px solid #cbd5e1;
     border-radius: 50%;
-    background: #fff;
-    color: #0f203e;
+    background: #0f203e;
+    color: #fff;
     line-height: 1;
     cursor: pointer;
 }
 
 button.quitar-fila:hover {
-    background: #fde8e8;
+    background: #2563eb;
 }
 
 .tabla-scroll {
@@ -330,4 +329,26 @@ button.quitar-fila:hover {
 
 .agregar-chip input.invalido {
     border-color: #b42318;
+}
+
+.btn-volver {
+    margin: 10px 0 0;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 8px;
+    background: #0f203e;
+    color: #fff;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-volver:hover {
+    background: #2563eb;
+}
+
+.btn-volver[hidden] {
+    display: none;
 }

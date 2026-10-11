@@ -11,7 +11,7 @@
     <!-- Comparte estilos con Bodegas (mismo diseño de formulario + tabla) -->
     <link rel="stylesheet" href="css/bodegas.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
+
 
 </head>
 
@@ -49,10 +49,16 @@
                     <span>Catálogo</span>
                 </a>
 
+                <a href="modelos.html" class="menu-item">
+                    <i class="fa-solid fa-shoe-prints"></i>
+                    <span>Modelos</span>
+                </a>
+
                 <a href="usuarios.html" class="menu-item">
                     <i class="fa-solid fa-users"></i>
                     <span>Usuarios</span>
                 </a>
+
 
 
             </nav>
@@ -125,14 +131,17 @@
                                     placeholder="Ej. Original, Nacional, Importada" maxlength="40">
                             </div>
 
-                            <button type="submit" id="guardarBtn">Guardar calidad</button>
+                            <div class="acciones-form">
+                                <button type="submit" id="guardarBtn">Guardar calidad</button>
+                                <button type="button" id="cancelarBtn" hidden>Cancelar</button>
+                            </div>
 
                             <p id="mensaje" class="mensaje" role="status"></p>
                         </form>
                     </section>
 
                     <!-- LISTA -->
-                    <section class="panel mis-bodegas">
+                    <section class="panel panel-lista">
                         <div class="panel-encabezado">
                             <h2>Mis calidades</h2>
                             <span id="contador" class="contador">0</span>
@@ -142,6 +151,7 @@
                             <thead>
                                 <tr>
                                     <th>Nombre</th>
+                                    <th>Acción</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>

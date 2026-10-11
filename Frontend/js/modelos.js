@@ -1,0 +1,82 @@
+// ===== PERMISOS =====
+const tienePermiso = requerirRol("DUENO", "ADMIN");
+if (!tienePermiso) document.querySelector(".dashboard").hidden = true;
+
+// ===== ELEMENTOS DEL HTML =====
+const tbodyModelos = document.querySelector("#tablaModelos tbody");
+const textoVacio = document.getElementById("vacio");
+const contador = document.getElementById("contador");
+const buscador = document.getElementById("searchInput");
+const mensaje = document.getElementById("mensaje");
+
+let modelos = [];
+let calidades = [];
+
+// ===== UTILIDADES =====
+function mostrarMensaje(texto, tipo) {
+    mensaje.textContent = texto;
+    mensaje.className = "mensaje " + (tipo || "");
+}
+
+function escapar(texto) {
+    const div = document.createElement("div");
+    div.textContent = texto ?? "";
+    return div.innerHTML.replace(/"/g, "&quot;");
+}
+
+function dinero(numero) {
+    return "$" + Number(numero).toLocaleString("es-CO");
+}
+
+// ===== LISTA =====
+function dibujarModelos() {
+    const filtro = buscador.value.trim().toLowerCase();
+    const visibles = modelos.filter(m =>
+        [m.referencia, m.nombre, m.marca].some(t => (t ?? "").toLowerCase().includes(filtro))
+    );
+
+    tbodyModelos.innerHTML = visibles
+        .map(m => {
+            const precios = m.precios
+                .map(p => {
+                    const cal = calidades.find(c => c.id === p.calidadId);
+                    return `<span class="precio-linea">${escapar(p.calidad ?? (cal ? cal.nombre : "?"))}: ` +
+                        `costo ${dinero(p.costo)} · mín. ${dinero(p.precioMinimo)} · sugerido ${dinero(p.precioSugerido)}</span>`;
+                })
+                .join("");
+
+            return `<tr>
+                <td>${escapar(m.referencia)}</td>
+                <td>${escapar(m.nombre)}</td>
+                <td>${escapar(m.marca)}</td>
+                <td>${m.colores.length} × ${m.tallas.length} × ${m.precios.length} = ${m.colores.length * m.tallas.length * m.precios.length}</td>
+                <td>${precios}</td>
+                <td><a class="btn-editar" href="catalogo.html?id=${encodeURIComponent(m.id)}">
+                    <i class="fa-solid fa-pen"></i> Editar</a></td>
+            </tr>`;
+        })
+        .join("");
+
+    textoVacio.hidden = modelos.length > 0;
+    contador.textContent = modelos.length;
+}
+
+async function cargarModelos() {
+    [modelos, calidades] = await Promise.all([
+        apiFetch("/catalogo"),
+        apiFetch("/calidades"),
+    ]);
+    dibujarModelos();
+}
+
+// ===== EVENTOS =====
+buscador.addEventListener("input", dibujarModelos);
+
+document.addEventListener("DOMContentLoaded", async () => {
+    if (!tienePermiso) return;
+    try {
+        await cargarModelos();
+    } catch (e) {
+        mostrarMensaje(e.message, "error");
+    }
+});

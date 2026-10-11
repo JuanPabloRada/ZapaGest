@@ -1,34 +1,34 @@
+// ===== PERMISOS =====
+// Dueño y administrador gestionan las ubicaciones (HU-04). Si el rol no puede entrar,
+// requerirRol redirige al dashboard.
 const tienePermiso = requerirRol("DUENO", "ADMIN");
 if (!tienePermiso) document.querySelector(".dashboard").hidden = true;
 
 // ===== CONFIGURACIÓN =====
 const MAX_BODEGAS = 10;
 const MENSAJE_LIMITE = "Ha alcanzado el límite máximo permitido de 10 ubicaciones";
-const USAR_API = true;
 
 // ===== ELEMENTOS DEL HTML =====
 const form = document.getElementById("bodegaForm");
+const tituloForm = document.getElementById("tituloForm");
 const inputNombre = document.getElementById("nombre");
 const botonGuardar = document.getElementById("guardarBtn");
+const botonCancelar = document.getElementById("cancelarBtn");
 const mensaje = document.getElementById("mensaje");
 const contador = document.getElementById("contador");
 const tbody = document.querySelector("#tablaBodegas tbody");
 const textoVacio = document.getElementById("vacio");
 const buscador = document.getElementById("searchInput");
 
-// ===== DATOS FALSOS (se usan mientras no exista la API) =====
-// "activo" indica si la bodega está en uso. El contador solo cuenta las activas.
-let bodegas = [
-    { id: 1, nombre: "Local Principal", activo: true },
-    { id: 2, nombre: "Bodega 1", activo: true },
-    { id: 3, nombre: "Bodega antigua", activo: false },
-];
+// ===== ESTADO =====
+let bodegasActuales = []; // última lista dibujada
+let editandoId = null;    // null = creando; con valor = editando esa bodega
 
 // ===== REGLAS DE NEGOCIO (HU-04) =====
+// El backend envía "activa" (true/false). El contador solo cuenta las activas.
 
-// Si el backend no envía "activo", se asume que la bodega está activa
 function esActiva(bodega) {
-    return bodega.activa !== false && bodega.activa !== false;
+    return bodega.activa !== false;
 }
 
 function contarActivas(lista) {
@@ -39,40 +39,28 @@ function limiteAlcanzado(lista) {
     return contarActivas(lista) >= MAX_BODEGAS;
 }
 
-// ===== ACCESO A DATOS =====
-// Estas funciones son las únicas que cambian cuando llegue la API.
+// ===== ACCESO A DATOS (API) =====
+// apiFetch (api.js) ya agrega el token y convierte los errores en excepciones.
 
-async function obtenerBodegas() {
-    if (!USAR_API) return bodegas;
+function obtenerBodegas() {
     return apiFetch("/ubicaciones");
 }
 
-async function guardarBodega(datos) {
-    if (!USAR_API) {
-        const siguienteId = bodegas.reduce((max, b) => Math.max(max, b.id), 0) + 1;
-        const nueva = { id: siguienteId, activo: true, ...datos };
-        bodegas.push(nueva);
-        return nueva;
-    }
-
-    return apiFetch("/ubicaciones", {
-        method: "POST",
-        body: JSON.stringify(datos),
-    });
+function guardarBodega(datos) {
+    return apiFetch("/ubicaciones", { method: "POST", body: JSON.stringify(datos) });
 }
 
-// Activa o desactiva una bodega.
-// OJO: este endpoint (PATCH /api/ubicaciones/{id}) hay que acordarlo con Joseph.
-async function cambiarEstadoBodega(id, activo) {
-    if (!USAR_API) {
-        const bodega = bodegas.find(b => String(b.id) === String(id));
-        if (bodega) bodega.activo = activo;
-        return bodega;
-    }
+// OJO: este endpoint debe existir en el backend (pídeselo a Joseph).
+// PUT /api/ubicaciones/{id} con { "nombre": "..." }
+function actualizarBodega(id, datos) {
+    return apiFetch(`/ubicaciones/${id}`, { method: "PUT", body: JSON.stringify(datos) });
+}
 
+// Activa o desactiva una bodega: PATCH /api/ubicaciones/{id} con { "activa": true|false }
+function cambiarEstadoBodega(id, activa) {
     return apiFetch(`/ubicaciones/${id}`, {
         method: "PATCH",
-        body: JSON.stringify({ activa: activo }),
+        body: JSON.stringify({ activa }),
     });
 }
 
@@ -90,7 +78,27 @@ function escapar(texto) {
     return div.innerHTML.replace(/"/g, "&quot;");
 }
 
+function entrarModoEdicion(bodega) {
+    editandoId = bodega.id;
+    inputNombre.value = bodega.nombre;
+    tituloForm.textContent = "Editar bodega";
+    botonGuardar.textContent = "Guardar cambios";
+    botonCancelar.hidden = false;
+    mostrarMensaje("", "");
+    inputNombre.focus();
+    form.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+function salirModoEdicion() {
+    editandoId = null;
+    form.reset();
+    tituloForm.textContent = "Nueva bodega";
+    botonGuardar.textContent = "Guardar bodega";
+    botonCancelar.hidden = true;
+}
+
 function dibujarTabla(lista) {
+    bodegasActuales = lista;
     const filtro = buscador.value.trim().toLowerCase();
     const visibles = lista.filter(b => b.nombre.toLowerCase().includes(filtro));
 
@@ -101,9 +109,13 @@ function dibujarTabla(lista) {
                 <td>${escapar(String(b.id))}</td>
                 <td>${escapar(b.nombre)}</td>
                 <td><span class="estado ${activa ? "activa" : "inactiva"}">${activa ? "Activa" : "Inactiva"}</span></td>
-                <td><button type="button" class="btn-estado"
-                    data-id="${escapar(String(b.id))}" data-activa="${activa}">
-                    ${activa ? "Desactivar" : "Activar"}</button></td>
+                <td><div class="acciones">
+                    <button type="button" class="btn-estado btn-editar"
+                        data-id="${escapar(String(b.id))}">Editar</button>
+                    <button type="button" class="btn-estado btn-cambiar-estado"
+                        data-id="${escapar(String(b.id))}" data-activa="${activa}">
+                        ${activa ? "Desactivar" : "Activar"}</button>
+                </div></td>
             </tr>`;
         })
         .join("");
@@ -118,8 +130,7 @@ function dibujarTabla(lista) {
 
 async function cargarBodegas() {
     try {
-        const lista = await obtenerBodegas();
-        dibujarTabla(lista);
+        dibujarTabla(await obtenerBodegas());
     } catch (e) {
         mostrarMensaje(e.message, "error");
     }
@@ -127,11 +138,11 @@ async function cargarBodegas() {
 
 // ===== EVENTOS =====
 
-// Registrar una nueva bodega
+// Registrar una bodega nueva o guardar los cambios de una existente
 form.addEventListener("submit", async function (event) {
     event.preventDefault();
 
-    const nombre = inputNombre.value.trim();
+    const nombre = inputNombre.value.trim().replace(/\s+/g, " ");
 
     if (nombre === "") {
         mostrarMensaje("Escribe el nombre de la bodega.", "error");
@@ -143,23 +154,33 @@ form.addEventListener("submit", async function (event) {
     try {
         const lista = await obtenerBodegas();
 
-        // Si ya hay 10 activas, se bloquea la creación de la número 11
-        if (limiteAlcanzado(lista)) {
+        // Si ya hay 10 activas, se bloquea la creación de la número 11 (editar no cambia el conteo)
+        if (editandoId === null && limiteAlcanzado(lista)) {
             mostrarMensaje(MENSAJE_LIMITE, "error");
             dibujarTabla(lista);
             return;
         }
 
         // Cada ubicación se identifica por su nombre: no se permiten repetidos
-        const existe = lista.some(b => b.nombre.toLowerCase() === nombre.toLowerCase());
+        // (al editar se ignora la propia bodega)
+        const existe = lista.some(b =>
+            String(b.id) !== String(editandoId) &&
+            b.nombre.toLowerCase() === nombre.toLowerCase()
+        );
         if (existe) {
             mostrarMensaje("Ya existe una bodega con ese nombre.", "error");
             return;
         }
 
-        await guardarBodega({ nombre });
-        form.reset();
-        mostrarMensaje("Bodega guardada.", "ok");
+        if (editandoId !== null) {
+            await actualizarBodega(editandoId, { nombre });
+            salirModoEdicion();
+            mostrarMensaje("Bodega actualizada.", "ok");
+        } else {
+            await guardarBodega({ nombre });
+            form.reset();
+            mostrarMensaje("Bodega guardada.", "ok");
+        }
         await cargarBodegas();
     } catch (e) {
         mostrarMensaje(e.message, "error");
@@ -168,9 +189,21 @@ form.addEventListener("submit", async function (event) {
     }
 });
 
-// Activar / desactivar una bodega desde la tabla
+botonCancelar.addEventListener("click", function () {
+    salirModoEdicion();
+    mostrarMensaje("", "");
+});
+
+// Botones de la tabla: Editar y Activar / Desactivar
 tbody.addEventListener("click", async function (event) {
-    const boton = event.target.closest(".btn-estado");
+    const botonEditar = event.target.closest(".btn-editar");
+    if (botonEditar) {
+        const bodega = bodegasActuales.find(b => String(b.id) === botonEditar.dataset.id);
+        if (bodega) entrarModoEdicion(bodega);
+        return;
+    }
+
+    const boton = event.target.closest(".btn-cambiar-estado");
     if (!boton) return;
 
     const id = boton.dataset.id;

@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="css/dashboard.css">
     <link rel="stylesheet" href="css/bodegas.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
+
 
 </head>
 
@@ -46,6 +46,11 @@
                 <a href="catalogo.html" class="menu-item">
                     <i class="fa-solid fa-folder-open"></i>
                     <span>Catálogo</span>
+                </a>
+
+                <a href="modelos.html" class="menu-item">
+                    <i class="fa-solid fa-shoe-prints"></i>
+                    <span>Modelos</span>
                 </a>
 
                 <a href="usuarios.html" class="menu-item">
@@ -124,14 +129,17 @@
                                     maxlength="60">
                             </div>
 
-                            <button type="submit" id="guardarBtn">Guardar bodega</button>
+                            <div class="acciones-form">
+                                <button type="submit" id="guardarBtn">Guardar bodega</button>
+                                <button type="button" id="cancelarBtn" hidden>Cancelar</button>
+                            </div>
 
                             <p id="mensaje" class="mensaje" role="status"></p>
                         </form>
                     </section>
 
                     <!-- LISTA -->
-                    <section class="panel mis-bodegas">
+                    <section class="panel panel-lista">
                         <div class="panel-encabezado">
                             <h2>Mis bodegas</h2>
                             <span id="contador" class="contador">0 de 10</span>

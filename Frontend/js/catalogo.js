@@ -1,14 +1,19 @@
 // ===== PERMISOS =====
-// Si el rol no puede entrar, requerirRol redirige al dashboard (igual que usuarios.js).
 const tienePermiso = requerirRol("DUENO", "ADMIN");
 if (!tienePermiso) document.querySelector(".dashboard").hidden = true;
 
-// ===== CONFIGURACIÓN =====
-const USAR_API_CALIDADES = true;
-const USAR_API_MODELOS = true; // Joseph ya implementó /api/catalogo.
+// ===== MODO: CREAR O EDITAR =====
+// catalogo.html           -> crear un modelo nuevo
+// catalogo.html?id=5      -> editar el modelo 5 (mismo formulario, con sus datos)
+const idEditar = new URLSearchParams(window.location.search).get("id");
+const modeloEditandoId = idEditar !== null && idEditar !== "" ? Number(idEditar) : null;
+const editando = modeloEditandoId !== null && !Number.isNaN(modeloEditandoId);
 
 // ===== ELEMENTOS DEL HTML =====
 const form = document.getElementById("modeloForm");
+const tituloForm = document.getElementById("tituloForm");
+const enlaceVolver = document.getElementById("volverModelos");
+const avisoStock = document.getElementById("avisoStock");
 const inputReferencia = document.getElementById("referencia");
 const inputNombre = document.getElementById("nombre");
 const inputMarca = document.getElementById("marca");
@@ -19,13 +24,9 @@ const tbodyPrecios = document.querySelector("#tablaPrecios tbody");
 const sinCalidades = document.getElementById("sinCalidades");
 const botonGuardar = document.getElementById("guardarBtn");
 const mensaje = document.getElementById("mensaje");
-const contador = document.getElementById("contador");
-const tbodyModelos = document.querySelector("#tablaModelos tbody");
-const textoVacio = document.getElementById("vacio");
-const buscador = document.getElementById("searchInput");
 
 // ===== ACCESO A DATOS (API) =====
-// apiFetch (definida en otro archivo) ya agrega el token.
+// apiFetch (api.js) ya agrega el token.
 function obtenerCalidades() {
     return apiFetch("/calidades");
 }
@@ -36,6 +37,11 @@ function obtenerModelos() {
 
 function guardarModelo(datos) {
     return apiFetch("/catalogo", { method: "POST", body: JSON.stringify(datos) });
+}
+
+// OJO: este endpoint debe existir en el backend (pídeselo a Joseph).
+function actualizarModelo(id, datos) {
+    return apiFetch(`/catalogo/${id}`, { method: "PUT", body: JSON.stringify(datos) });
 }
 
 function obtenerTallas() {
@@ -60,13 +66,8 @@ function escapar(texto) {
     return div.innerHTML.replace(/"/g, "&quot;");
 }
 
-function dinero(numero) {
-    return "$" + Number(numero).toLocaleString("es-CO");
-}
-
 // ===== DESPLEGABLES DE COLORES Y TALLAS =====
-// Cada desplegable agrega el valor elegido como etiqueta (se pueden elegir varios).
-// Colores: la última opción, "Añadir otro...", muestra un campo para crear uno nuevo
+// Colores: la última opción, "Añadir otro...", permite crear uno nuevo
 //          (el backend lo crea al guardar el modelo).
 // Tallas: solo se pueden elegir las que vienen del backend.
 
@@ -117,7 +118,6 @@ async function cargarTallasYColores() {
         obtenerTallas(),
         obtenerColores(),
     ]);
-    // Se reemplaza el contenido de la lista (no la referencia) y se redibuja
     selTalla.lista = tallasApi.map(t => String(t.nombre));
     selColor.lista = coloresApi.map(c => c.nombre);
     dibujarSelector(selTalla);
@@ -173,7 +173,6 @@ function agregarNuevo(s) {
 
     const existente = s.lista.find(v => v.toLowerCase() === valor.toLowerCase());
     if (existente) {
-        // Si ya existía, simplemente se selecciona
         if (!s.elegidos.includes(existente)) s.elegidos.push(existente);
     } else {
         s.lista.push(valor);
@@ -230,9 +229,7 @@ function limpiarSelecciones() {
     }
 }
 
-// La calidad es un atributo de la variante (HU-03):
 // variantes = colores × tallas × calidades.
-// Misma referencia, color y talla con otra calidad = otra variante.
 function actualizarResumen() {
     const c = selColor.elegidos.length;
     const t = selTalla.elegidos.length;
@@ -245,12 +242,10 @@ function actualizarResumen() {
     }
     resumenVariantes.textContent =
         `${c} color${c > 1 ? "es" : ""} × ${t} talla${t > 1 ? "s" : ""} × ` +
-        `${q} calidad${q > 1 ? "es" : ""} = ${c * t * q} combinaciones posibles (aún no se crean ni tienen stock)`;
+        `${q} calidad${q > 1 ? "es" : ""} = ${c * t * q} combinaciones posibles`;
 }
 
 // ===== CALIDADES Y PRECIOS =====
-// Se elige una calidad ya creada en el desplegable y se le asignan sus precios.
-// Cada calidad se puede añadir una sola vez por modelo.
 
 let calidadesCargadas = [];
 let filasPrecios = []; // { calidadId, costo, precioMinimo, precioVenta } (texto de los campos)
@@ -353,12 +348,10 @@ selectCalidad.addEventListener("change", () => {
     dibujarFilasPrecios();
     mostrarMensaje("", "");
 
-    // Lleva el cursor al campo "Costo" de la fila nueva
     const ultimo = tbodyPrecios.querySelector("tr:last-child input");
     if (ultimo) ultimo.focus();
 });
 
-// Guarda lo que se escribe en cada fila sin volver a dibujar la tabla
 tbodyPrecios.addEventListener("input", e => {
     const campo = e.target.dataset.campo;
     const fila = e.target.closest("tr");
@@ -374,42 +367,57 @@ tbodyPrecios.addEventListener("click", e => {
     dibujarSelectCalidad();
 });
 
-// ===== LISTA DE MODELOS =====
+// ===== MODO EDICIÓN: rellenar el formulario con los datos del modelo =====
 
-async function dibujarModelos() {
-    const [listaModelos, listaCalidades] = await Promise.all([
-        obtenerModelos(),
-        obtenerCalidades(),
-    ]);
+async function cargarModeloParaEditar() {
+    const lista = await obtenerModelos();
+    const m = lista.find(x => Number(x.id) === modeloEditandoId);
 
-    const filtro = buscador.value.trim().toLowerCase();
-    const visibles = listaModelos.filter(m =>
-        [m.referencia, m.nombre, m.marca].some(t => (t ?? "").toLowerCase().includes(filtro))
-    );
+    if (!m) {
+        mostrarMensaje("No se encontró el modelo que quieres editar.", "error");
+        botonGuardar.disabled = true;
+        return;
+    }
 
-    tbodyModelos.innerHTML = visibles
-        .map(m => {
-            const precios = m.precios
-                .map(p => {
-                    const cal = listaCalidades.find(c => c.id === p.calidadId);
-                    return `<span class="precio-linea">${escapar(p.calidad ?? (cal ? cal.nombre : "?"))}: ` +
-                        `costo ${dinero(p.costo)} · mín. ${dinero(p.precioMinimo)} · sugerido ${dinero(p.precioSugerido)}</span>`;
-                })
-                .join("");
+    inputReferencia.value = m.referencia ?? "";
+    inputNombre.value = m.nombre ?? "";
+    inputMarca.value = m.marca ?? "";
 
-            return `<tr>
-                <td>${escapar(m.referencia)}</td>
-                <td>${escapar(m.nombre)}</td>
-                <td>${escapar(m.marca)}</td>
-                <td>${m.colores.length} × ${m.tallas.length} × ${m.precios.length} = ${m.colores.length * m.tallas.length * m.precios.length}</td>
-                <td>${precios}</td>
-            </tr>`;
-        })
-        .join("");
+    // Si el modelo trae un color o talla que no está en la lista, se agrega para poder mostrarlo
+    selColor.elegidos = [...m.colores];
+    for (const v of selColor.elegidos) {
+        if (!selColor.lista.includes(v)) selColor.lista.push(v);
+    }
+    selTalla.elegidos = m.tallas.map(String);
+    for (const v of selTalla.elegidos) {
+        if (!selTalla.lista.includes(v)) selTalla.lista.push(v);
+    }
 
-    textoVacio.hidden = listaModelos.length > 0;
-    contador.textContent = listaModelos.length;
+    filasPrecios = m.precios.map(p => ({
+        calidadId: p.calidadId,
+        costo: String(p.costo),
+        precioMinimo: String(p.precioMinimo),
+        precioVenta: String(p.precioSugerido),
+    }));
+
+    dibujarSelector(selColor);
+    dibujarSelector(selTalla);
+    dibujarSelectCalidad();
+    dibujarFilasPrecios();
 }
+
+function prepararTextosModoEdicion() {
+    if (!editando) return;
+    tituloForm.textContent = "Editar modelo";
+    botonGuardar.textContent = "Guardar cambios";
+    enlaceVolver.hidden = false;
+    avisoStock.hidden = true;
+}
+
+// Botón "Volver a modelos" (solo visible al editar)
+enlaceVolver.addEventListener("click", () => {
+    window.location.href = "modelos.html";
+});
 
 // ===== EVENTOS =====
 
@@ -444,23 +452,30 @@ form.addEventListener("submit", async function (event) {
         return;
     }
 
+    const datos = {
+        referencia,
+        nombre,
+        marca,
+        colores: coloresElegidos,
+        tallas: tallasElegidas,
+        precios: lectura.precios.map(precio => ({
+            calidadId: precio.calidadId,
+            costo: precio.costo,
+            precioMinimo: precio.precioMinimo,
+            precioSugerido: precio.precioVenta,
+        })),
+    };
+
     botonGuardar.disabled = true; // evita doble clic
     try {
-        // La validación de referencia repetida la hace el backend
-        // ("Ya existe una referencia con el código…") y se muestra en el catch.
-        await guardarModelo({
-            referencia,
-            nombre,
-            marca,
-            colores: coloresElegidos,
-            tallas: tallasElegidas,
-            precios: lectura.precios.map(precio => ({
-                calidadId: precio.calidadId,
-                costo: precio.costo,
-                precioMinimo: precio.precioMinimo,
-                precioSugerido: precio.precioVenta,
-            })),
-        });
+        // Referencia repetida: la valida el backend y su mensaje se muestra en el catch.
+        if (editando) {
+            await actualizarModelo(modeloEditandoId, datos);
+            window.location.href = "modelos.html";
+            return;
+        }
+
+        await guardarModelo(datos);
 
         form.reset();
         limpiarSelecciones();
@@ -469,7 +484,6 @@ form.addEventListener("submit", async function (event) {
         await cargarCalidades();
         await cargarTallasYColores(); // por si el backend creó un color nuevo
         mostrarMensaje("Modelo guardado con stock en 0.", "ok");
-        await dibujarModelos();
     } catch (e) {
         mostrarMensaje(e.message, "error");
     } finally {
@@ -477,17 +491,16 @@ form.addEventListener("submit", async function (event) {
     }
 });
 
-buscador.addEventListener("input", () =>
-    dibujarModelos().catch(e => mostrarMensaje(e.message, "error")));
-
 document.addEventListener("DOMContentLoaded", async () => {
+    if (!tienePermiso) return; // ya se está redirigiendo; no llamar a la API
+    prepararTextosModoEdicion();
     dibujarSelector(selColor);
     dibujarSelector(selTalla);
     try {
         await cargarTallasYColores();
         await cargarCalidades();
         dibujarFilasPrecios();
-        await dibujarModelos();
+        if (editando) await cargarModeloParaEditar();
     } catch (e) {
         mostrarMensaje(e.message, "error");
     }

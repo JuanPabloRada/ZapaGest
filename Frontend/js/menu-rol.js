@@ -14,7 +14,8 @@
         "bodegas.html": ["DUENO", "ADMIN"],
         "calidades.html": ["DUENO"],           // HU-03: el dueño configura las calidades
         "catalogo.html": ["DUENO", "ADMIN"],
-        "usuarios.html": ["DUENO"],            // el backend solo deja listar/crear usuarios al dueño
+        "usuarios.html": ["DUENO"],          // el backend solo deja listar/crear usuarios al dueño
+        "modelos.html": ["DUENO", "ADMIN", "VENDEDOR"],
     };
 
     document.addEventListener("DOMContentLoaded", function () {

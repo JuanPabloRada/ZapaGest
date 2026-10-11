@@ -72,9 +72,10 @@
     align-items: center;
     margin-bottom: 12px;
 }
-.mis-bodegas{
+.panel-lista{
     background: #0f203e;
     color: #fff;
+    margin-top: 15px;
 }
 
 .contador {
@@ -150,4 +151,36 @@ button:disabled {
     .bodegas-grid {
         grid-template-columns: 1fr;
     }
+}
+
+   .tabla .btn-editar {
+       display: inline-flex;
+       align-items: center;
+       gap: 6px;
+       padding: 6px 12px;
+       border: 1px solid #fff;
+       border-radius: 8px;
+       color: #fff;
+       font-size: 13px;
+       text-decoration: none;
+   }
+   .tabla .btn-editar:hover {
+       background: #2563eb;
+       border-color: #2563eb;
+   }
+
+   .acciones-form {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+}
+
+/* Sin esto, el hidden del botón Cancelar no funciona: .panel button usa display:flex */
+.panel button[hidden] {
+    display: none;
+}
+
+.acciones {
+    display: flex;
+    gap: 8px;
 }

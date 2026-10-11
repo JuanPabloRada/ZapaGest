@@ -11,8 +11,6 @@
     <link rel="stylesheet" href="css/bodegas.css"> <!-- tabla, mensajes, contador -->
     <link rel="stylesheet" href="css/catalogo.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
-
 </head>
 
 <body>
@@ -24,7 +22,6 @@
 
             <div class="sidebar-logo">
                 <img src="img/logo principal.png" alt="ZapaGest">
-
             </div>
 
             <nav class="menu">
@@ -49,15 +46,17 @@
                     <span>Catálogo</span>
                 </a>
 
+                <a href="modelos.html" class="menu-item">
+                    <i class="fa-solid fa-shoe-prints"></i>
+                    <span>Modelos</span>
+                </a>
+
                 <a href="usuarios.html" class="menu-item">
                     <i class="fa-solid fa-users"></i>
                     <span>Usuarios</span>
                 </a>
 
-
             </nav>
-
-
 
         </aside>
 
@@ -69,7 +68,6 @@
                 <div class="buscador">
                     <input type="text" id="searchInput" placeholder="Buscar...">
                 </div>
-
 
                 <div class="usuario-menu">
                     <button class="usuario" id="usuarioBtn" aria-expanded="false">
@@ -92,10 +90,6 @@
 
                         <hr>
 
-                        <!-- <a href="perfil.html" class="dropdown-item">
-                            <i class="fa-solid fa-user"></i> Mi perfil
-                        </a> -->
-
                         <button id="logoutButton" class="dropdown-item logout">
                             <i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión
                         </button>
@@ -111,12 +105,13 @@
                     <p class="descripcion">
                         Registra tus modelos
                     </p>
+                    <!-- Solo se muestra al editar (catalogo.js) -->
+                    <button type="button" id="volverModelos" class="btn-volver" hidden> Volver a modelos</button>
                 </div>
 
-
-                <!-- FORMULARIO -->
+                <!-- FORMULARIO (sirve para crear y para editar) -->
                 <section class="panel">
-                    <h2>Nuevo modelo</h2>
+                    <h2 id="tituloForm">Nuevo modelo</h2>
 
                     <form id="modeloForm" novalidate>
 
@@ -124,7 +119,8 @@
                         <fieldset>
                             <legend>Datos del modelo</legend>
 
-                            <div class="fila-3">                                <div class="form-group">
+                            <div class="fila-3">
+                                <div class="form-group">
                                     <label for="referencia">Referencia</label>
                                     <input type="text" id="referencia" placeholder="Ej. AF1-001" maxlength="30">
                                 </div>
@@ -156,7 +152,6 @@
                         <fieldset>
                             <legend>Tallas</legend>
                             <select id="selectTalla" class="desplegable" aria-label="Elegir talla"></select>
-                            <p id="errorNuevaTalla" class="error-campo" role="alert" hidden></p>
                             <div id="tagsTallas" class="tags"></div>
                         </fieldset>
 
@@ -194,7 +189,7 @@
                             </div>
                         </fieldset>
 
-                        <p class="aviso">
+                        <p id="avisoStock" class="aviso">
                             📦 El stock de cada combinación queda en 0. Las cantidades se cargan después, en inventario.
                         </p>
 
@@ -202,33 +197,6 @@
                         <p id="mensaje" class="mensaje" role="status"></p>
 
                     </form>
-                </section>
-
-                <!-- LISTA -->
-                <section class="panel mis-bodegas">
-                    <div class="panel-encabezado">
-                        <h2>Mis modelos</h2>
-                        <span id="contador" class="contador">0</span>
-                    </div>
-
-                    <div class="tabla-scroll">
-                        <table class="tabla" id="tablaModelos">
-                            <thead>
-                                <tr>
-                                    <th>Referencia</th>
-                                    <th>Modelo</th>
-                                    <th>Marca</th>
-                                    <th>Combinaciones Posibles</th>
-                                    <th>Precios por calidad</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
-                    </div>
-
-                    <p id="vacio" class="vacio" hidden>
-                        Aún no tienes modelos. Crea el primero con el formulario.
-                    </p>
                 </section>
 
             </section>

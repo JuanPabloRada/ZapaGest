@@ -5,6 +5,9 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.Set;
 
 import org.springframework.stereotype.Service;
@@ -14,6 +17,7 @@ import com.zapgest.backend.dto.catalogo.CatalogoRequest;
 import com.zapgest.backend.dto.catalogo.CatalogoResponse;
 import com.zapgest.backend.dto.catalogo.OpcionResponse;
 import com.zapgest.backend.dto.catalogo.PrecioRequest;
+import com.zapgest.backend.exceptions.RecursoNoEncontradoException;
 import com.zapgest.backend.exceptions.ReferenciaDuplicadaException;
 import com.zapgest.backend.models.Calidad;
 import com.zapgest.backend.models.Color;
@@ -120,6 +124,80 @@ public class CatalogoService {
         referencia = referenciaRepository.saveAndFlush(referencia);
 
         return CatalogoResponse.desde(referencia);
+    }
+
+    // PUT /api/catalogo/{id}: recibe el mismo cuerpo que el POST y deja la referencia
+    // exactamente como llega (datos, colores, tallas y precios por calidad).
+    // Decisiones del grupo:
+    //  - El codigo SI se puede cambiar, siempre que no lo tenga OTRA referencia (409).
+    //  - Quitar colores, tallas o calidades se permite por ahora, porque el stock aun
+    //    no existe (llega en el Sprint 2). Ver verificarQueSePuedenQuitar().
+    @Transactional
+    public CatalogoResponse editar(Long id, CatalogoRequest datos) {
+        Referencia referencia = referenciaRepository.findByIdAndNegocioId(id, NEGOCIO_ID)
+                .orElseThrow(() -> new RecursoNoEncontradoException("No se encontró la referencia."));
+        if (datos == null) {
+            throw new IllegalArgumentException("Faltan los datos de la referencia.");
+        }
+
+        // 1. Datos basicos (mismas reglas que al crear)
+        String codigo = obligatorio(datos.referencia(), "La referencia (código) es obligatoria.", 40);
+        String nombre = obligatorio(datos.nombre(), "El nombre es obligatorio.", 100);
+        String marca = opcional(datos.marca(), "La marca", 60);
+
+        // 2. Codigo unico ignorando la propia referencia
+        if (referenciaRepository.existsByNegocioIdAndCodigoIgnoreCaseAndIdNot(NEGOCIO_ID, codigo, id)) {
+            throw new ReferenciaDuplicadaException(codigo);
+        }
+
+        // 3. Validar TODO antes de cambiar nada (los colores al final porque crean registros)
+        Set<Talla> tallas = resolverTallas(datos.tallas());
+        List<PrecioConCalidad> precios = validarPrecios(datos.precios());
+        Set<Color> colores = resolverColores(datos.colores());
+        verificarQueSePuedenQuitar(referencia, colores, tallas, precios);
+
+        // 4. Datos basicos, colores y tallas
+        referencia.setCodigo(codigo);
+        referencia.setNombre(nombre);
+        referencia.setMarca(marca);
+        referencia.getColores().clear();
+        referencia.getColores().addAll(colores);
+        referencia.getTallas().clear();
+        referencia.getTallas().addAll(tallas);
+
+        // 5. Precios: se actualizan los de las calidades que siguen, se quitan los que ya
+        //    no vienen y se agregan los nuevos. Los existentes se modifican en su sitio
+        //    (no se reemplazan) porque su llave es (referencia, calidad).
+        Map<Long, PrecioConCalidad> pedidos = precios.stream()
+                .collect(Collectors.toMap(pc -> pc.calidad().getId(), Function.identity()));
+        referencia.getPrecios().removeIf(rc -> !pedidos.containsKey(rc.getCalidad().getId()));
+        for (ReferenciaCalidad rc : referencia.getPrecios()) {
+            copiarPrecio(pedidos.remove(rc.getCalidad().getId()).precio(), rc);
+        }
+        for (PrecioConCalidad pc : pedidos.values()) {
+            ReferenciaCalidad rc = new ReferenciaCalidad();
+            rc.setId(new ReferenciaCalidadId(referencia.getId(), pc.calidad().getId()));
+            rc.setReferencia(referencia);
+            rc.setCalidad(pc.calidad());
+            copiarPrecio(pc.precio(), rc);
+            referencia.getPrecios().add(rc);
+        }
+
+        return CatalogoResponse.desde(referenciaRepository.saveAndFlush(referencia));
+    }
+
+    // Punto preparado para el Sprint 2: cuando exista el inventario, aqui se debe
+    // RECHAZAR (con un mensaje claro) quitar un color, una talla o una calidad que
+    // ya tenga stock. Hoy no hay stock, asi que no hay nada que bloquear.
+    private void verificarQueSePuedenQuitar(Referencia referencia, Set<Color> colores,
+            Set<Talla> tallas, List<PrecioConCalidad> precios) {
+        // Sin inventario todavia (HU-06 / HU-07, Sprint 2).
+    }
+
+    private void copiarPrecio(PrecioRequest p, ReferenciaCalidad rc) {
+        rc.setCostoAdquisicion(p.costo());
+        rc.setPrecioMinimo(p.precioMinimo());
+        rc.setPrecioSugerido(p.precioSugerido());
     }
 
     // ===== Validaciones =====

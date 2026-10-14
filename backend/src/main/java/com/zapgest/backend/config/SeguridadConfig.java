@@ -61,16 +61,22 @@ public class SeguridadConfig {
                         .accessDeniedHandler(accessDeniedHandler))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        // /error debe ser publico: si no, un error real (400/404/500) que Spring
+                        // reenvia a /error llega como 401 y el frontend cierra la sesion.
+                        .requestMatchers("/error").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/usuarios/**").hasRole("DUENO")
                         .requestMatchers(HttpMethod.POST, "/api/usuarios/**").hasRole("DUENO")
                         .requestMatchers(HttpMethod.GET, "/api/calidades/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/calidades/**").hasRole("DUENO")
+                        .requestMatchers(HttpMethod.PUT, "/api/calidades/**").hasRole("DUENO")
                         .requestMatchers(HttpMethod.GET, "/api/ubicaciones/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/ubicaciones/**").hasAnyRole("DUENO", "ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/api/ubicaciones/**").hasAnyRole("DUENO", "ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/ubicaciones/**").hasAnyRole("DUENO", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/catalogo/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/catalogo/**").hasAnyRole("DUENO", "ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/catalogo/**").hasAnyRole("DUENO", "ADMIN")
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

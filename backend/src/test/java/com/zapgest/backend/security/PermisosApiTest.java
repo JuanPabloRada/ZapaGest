@@ -11,6 +11,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -32,6 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.context.annotation.Import;
@@ -109,6 +111,11 @@ class PermisosApiTest {
         public String crear() {
             return "ok";
         }
+
+        @PutMapping("/{id}")
+        public String editar() {
+            return "ok";
+        }
     }
 
     @Autowired
@@ -141,6 +148,8 @@ class PermisosApiTest {
         when(ubicacionService.listar()).thenReturn(List.of());
         when(ubicacionService.crear(any())).thenReturn(new Ubicacion());
         when(ubicacionService.cambiarEstado(anyLong(), any())).thenReturn(new Ubicacion());
+        when(calidadService.editar(anyLong(), any())).thenReturn(new Calidad());
+        when(ubicacionService.editar(anyLong(), any())).thenReturn(new Ubicacion());
     }
 
     // ---------- helpers ----------
@@ -439,6 +448,57 @@ class PermisosApiTest {
                 .andExpect(status().isOk());
         mvc.perform(post("/api/catalogo").header("Authorization", bearer("admin1", Rol.ADMIN)))
                 .andExpect(status().isOk());
+    }
+
+    // ---------- editar (PUT) ----------
+
+    private static final String CUERPO_NOMBRE = "{\"nombre\":\"Nuevo nombre\"}";
+
+    private int putEstado(String ruta, String token) throws Exception {
+        return mvc.perform(put(ruta).header("Authorization", token)
+                .contentType(MediaType.APPLICATION_JSON).content(CUERPO_NOMBRE))
+                .andReturn().getResponse().getStatus();
+    }
+
+    @Test
+    void putSinTokenDa401() throws Exception {
+        for (String ruta : List.of("/api/calidades/1", "/api/ubicaciones/1", "/api/catalogo/1")) {
+            mvc.perform(put(ruta).contentType(MediaType.APPLICATION_JSON).content(CUERPO_NOMBRE))
+                    .andExpect(status().isUnauthorized());
+        }
+    }
+
+    @Test
+    void editarCalidadesEsSoloDelDueno() throws Exception {
+        org.assertj.core.api.Assertions.assertThat(putEstado("/api/calidades/1", bearer("vendedor1", Rol.VENDEDOR))).isEqualTo(403);
+        org.assertj.core.api.Assertions.assertThat(putEstado("/api/calidades/1", bearer("admin1", Rol.ADMIN))).isEqualTo(403);
+        org.assertj.core.api.Assertions.assertThat(putEstado("/api/calidades/1", bearer("dueno", Rol.DUENO))).isEqualTo(200);
+    }
+
+    @Test
+    void editarUbicacionesYCatalogoEsDeDuenoYAdmin() throws Exception {
+        for (String ruta : List.of("/api/ubicaciones/1", "/api/catalogo/1")) {
+            org.assertj.core.api.Assertions.assertThat(putEstado(ruta, bearer("vendedor1", Rol.VENDEDOR))).isEqualTo(403);
+            org.assertj.core.api.Assertions.assertThat(putEstado(ruta, bearer("admin1", Rol.ADMIN))).isEqualTo(200);
+            org.assertj.core.api.Assertions.assertThat(putEstado(ruta, bearer("dueno", Rol.DUENO))).isEqualTo(200);
+        }
+    }
+
+    @Test
+    void preflightDesdeElFrontendPermitePut() throws Exception {
+        mvc.perform(options("/api/catalogo/1")
+                .header("Origin", "http://localhost:5500")
+                .header("Access-Control-Request-Method", "PUT")
+                .header("Access-Control-Request-Headers", "authorization,content-type"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Access-Control-Allow-Origin", "http://localhost:5500"));
+    }
+
+    @Test
+    void laRutaErrorNoPideToken() throws Exception {
+        // Si /error pidiera token, un error real llegaria como 401 y el frontend cerraria la sesion
+        int estado = mvc.perform(get("/error")).andReturn().getResponse().getStatus();
+        org.assertj.core.api.Assertions.assertThat(estado).isNotEqualTo(401);
     }
 
     // ---------- UTF-8 en los mensajes 401 y 403 ----------

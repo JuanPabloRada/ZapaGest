@@ -26,10 +26,13 @@ import com.zapgest.backend.dto.catalogo.CatalogoRequest;
 import com.zapgest.backend.dto.catalogo.CatalogoResponse;
 import com.zapgest.backend.dto.catalogo.OpcionResponse;
 import com.zapgest.backend.dto.catalogo.PrecioRequest;
+import com.zapgest.backend.exceptions.RecursoNoEncontradoException;
 import com.zapgest.backend.exceptions.ReferenciaDuplicadaException;
 import com.zapgest.backend.models.Calidad;
 import com.zapgest.backend.models.Color;
 import com.zapgest.backend.models.Referencia;
+import com.zapgest.backend.models.ReferenciaCalidad;
+import com.zapgest.backend.models.ReferenciaCalidadId;
 import com.zapgest.backend.models.Talla;
 import com.zapgest.backend.repositories.CalidadRepository;
 import com.zapgest.backend.repositories.ColorRepository;
@@ -409,5 +412,123 @@ class CatalogoServiceTest {
         assertThat(tallas.get(0).nombre()).isEqualTo("34");
         assertThat(tallas.get(1).nombre()).isEqualTo("34.5");
         assertThat(tallas.get(24).nombre()).isEqualTo("46");
+    }
+
+    // ---------- editar (PUT /api/catalogo/{id}) ----------
+
+    // Referencia ya guardada: id 10, "AF1-001", color Blanco, talla 38 y precio para la calidad 1
+    private Referencia existente() {
+        Referencia ref = new Referencia();
+        ref.setId(10L);
+        ref.setNegocioId(1L);
+        ref.setCodigo("AF1-001");
+        ref.setNombre("Nike Air Force");
+        ref.setMarca("Nike");
+        ref.setActiva(true);
+        Color blanco = new Color();
+        blanco.setNegocioId(1L);
+        blanco.setNombre("Blanco");
+        ref.getColores().add(blanco);
+        ref.getTallas().add(tablaTallas.get(8)); // 38
+        ReferenciaCalidad rc = new ReferenciaCalidad();
+        rc.setId(new ReferenciaCalidadId(10L, 1L));
+        rc.setReferencia(ref);
+        rc.setCalidad(calidad(1L, 1L, "Original"));
+        rc.setCostoAdquisicion(new BigDecimal("100"));
+        rc.setPrecioMinimo(new BigDecimal("150"));
+        rc.setPrecioSugerido(new BigDecimal("200"));
+        ref.getPrecios().add(rc);
+        when(referenciaRepository.findByIdAndNegocioId(10L, 1L)).thenReturn(Optional.of(ref));
+        return ref;
+    }
+
+    @Test
+    void editarActualizaDatosColoresTallasYPrecios() {
+        Referencia ref = existente();
+
+        CatalogoResponse r = service.editar(10L, con("AF1-002", "Nike AF1 Low", "Nike", null,
+                List.of("Negro", "Rojo"), List.of("40", "40.5"),
+                List.of(precio(1L, "110", "160", "210"), precio(3L, "50", "70", "90"))));
+
+        assertThat(r.id()).isEqualTo(10L);
+        assertThat(r.referencia()).isEqualTo("AF1-002");
+        assertThat(r.nombre()).isEqualTo("Nike AF1 Low");
+        assertThat(r.colores()).containsExactly("Negro", "Rojo");
+        assertThat(r.tallas()).containsExactly("40", "40.5");
+        assertThat(r.precios()).hasSize(2);
+        assertThat(r.precios().get(0).calidadId()).isEqualTo(1L);
+        assertThat(r.precios().get(0).costo()).isEqualByComparingTo("110");
+        assertThat(r.precios().get(1).calidadId()).isEqualTo(3L);
+        assertThat(r.precios().get(1).precioSugerido()).isEqualByComparingTo("90");
+        // El precio de la calidad 1 se modifico EN SU SITIO (mismo objeto, misma llave)
+        assertThat(ref.getPrecios()).anySatisfy(p -> assertThat(p.getId()).isEqualTo(new ReferenciaCalidadId(10L, 1L)));
+        verify(referenciaRepository).saveAndFlush(ref);
+        verify(referenciaRepository, never()).save(any());
+    }
+
+    @Test
+    void editarQuitaLasCalidadesQueYaNoVienen() {
+        Referencia ref = existente();
+
+        service.editar(10L, con("AF1-001", "Nike Air Force", "Nike", null,
+                List.of("Blanco"), List.of("38"), List.of(precio(3L, "50", "70", "90"))));
+
+        assertThat(ref.getPrecios()).hasSize(1);
+        assertThat(ref.getPrecios().get(0).getCalidad().getId()).isEqualTo(3L);
+        assertThat(ref.getPrecios().get(0).getId()).isEqualTo(new ReferenciaCalidadId(10L, 3L));
+    }
+
+    @Test
+    void editarPermiteDejarElMismoCodigoPorqueSeIgnoraElPropioRegistro() {
+        existente();
+
+        service.editar(10L, con("af1-001", "Nike Air Force", "Nike", null,
+                List.of("Blanco"), List.of("38"), preciosValidos()));
+
+        verify(referenciaRepository).existsByNegocioIdAndCodigoIgnoreCaseAndIdNot(1L, "af1-001", 10L);
+        verify(referenciaRepository, never()).existsByNegocioIdAndCodigoIgnoreCase(any(), any());
+    }
+
+    @Test
+    void editarRechazaUnCodigoQueTieneOtraReferencia() {
+        Referencia ref = existente();
+        when(referenciaRepository.existsByNegocioIdAndCodigoIgnoreCaseAndIdNot(1L, "AF1-999", 10L)).thenReturn(true);
+
+        assertThatThrownBy(() -> service.editar(10L, con("AF1-999", "N", null, null,
+                List.of("Negro"), List.of("40"), preciosValidos())))
+                .isInstanceOf(ReferenciaDuplicadaException.class)
+                .hasMessageContaining("AF1-999");
+        assertThat(ref.getCodigo()).isEqualTo("AF1-001");
+        verify(referenciaRepository, never()).saveAndFlush(any());
+    }
+
+    @Test
+    void editarConDatosInvalidosNoCambiaNada() {
+        Referencia ref = existente();
+
+        assertThatThrownBy(() -> service.editar(10L, con("AF1-001", "Otro nombre", "Nike", null,
+                List.of("Morado"), List.of("50"), preciosValidos())))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("no es válida");
+        assertThatThrownBy(() -> service.editar(10L, con("AF1-001", "Otro nombre", "Nike", null,
+                List.of("Morado"), List.of("40"), List.of(precio(5L, "1", "2", "3")))))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("no existe");
+
+        assertThat(ref.getNombre()).isEqualTo("Nike Air Force");
+        assertThat(ref.getPrecios()).hasSize(1);
+        assertThat(ref.getPrecios().get(0).getCostoAdquisicion()).isEqualByComparingTo("100");
+        verify(colorRepository, never()).save(any());
+        verify(referenciaRepository, never()).saveAndFlush(any());
+    }
+
+    @Test
+    void editarUnaReferenciaQueNoExisteDa404() {
+        when(referenciaRepository.findByIdAndNegocioId(99L, 1L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.editar(99L, valida()))
+                .isInstanceOf(RecursoNoEncontradoException.class)
+                .hasMessage("No se encontró la referencia.");
+        verify(referenciaRepository, never()).saveAndFlush(any());
     }
 }

@@ -14,4 +14,9 @@ public interface UbicacionRepository extends JpaRepository<Ubicacion, Long> {
     List<Ubicacion> findAllByNegocioId(Long negocioId);
 
     Optional<Ubicacion> findByIdAndNegocioId(Long id, Long negocioId);
+
+    boolean existsByNegocioIdAndNombreIgnoreCase(Long negocioId, String nombre);
+
+    // Para editar: repetido en OTRA ubicacion (se ignora la propia)
+    boolean existsByNegocioIdAndNombreIgnoreCaseAndIdNot(Long negocioId, String nombre, Long id);
 }

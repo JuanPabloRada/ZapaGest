@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.zapgest.backend.exceptions.RecursoNoEncontradoException;
 import com.zapgest.backend.models.Calidad;
 import com.zapgest.backend.repositories.CalidadRepository;
 
@@ -25,16 +26,7 @@ public class CalidadService {
     }
 
     public Calidad crear(Calidad datos) {
-        if (datos == null || datos.getNombre() == null || datos.getNombre().isBlank()) {
-            throw new IllegalArgumentException("El nombre de la calidad es obligatorio.");
-        }
-
-        // Sin espacios de mas, igual que hace la pantalla
-        String nombre = datos.getNombre().trim().replaceAll("\\s+", " ");
-        if (nombre.length() > MAX_NOMBRE) {
-            throw new IllegalArgumentException(
-                    "El nombre de la calidad no puede superar los " + MAX_NOMBRE + " caracteres.");
-        }
+        String nombre = validarNombre(datos == null ? null : datos.getNombre());
         if (repository.existsByNegocioIdAndNombreIgnoreCase(NEGOCIO_ID, nombre)) {
             throw new IllegalArgumentException("Ya existe una calidad con ese nombre.");
         }
@@ -47,5 +39,31 @@ public class CalidadService {
         nueva.setNombre(nombre);
         nueva.setActiva(true);
         return repository.save(nueva);
+    }
+
+    // PUT /api/calidades/{id}: solo cambia el nombre
+    public Calidad editar(Long id, String nombreNuevo) {
+        Calidad calidad = repository.findByIdAndNegocioId(id, NEGOCIO_ID)
+                .orElseThrow(() -> new RecursoNoEncontradoException("No se encontró la calidad."));
+        String nombre = validarNombre(nombreNuevo);
+        // Repetido en OTRA calidad; la propia no cuenta (se puede guardar igual o cambiar mayúsculas)
+        if (repository.existsByNegocioIdAndNombreIgnoreCaseAndIdNot(NEGOCIO_ID, nombre, id)) {
+            throw new IllegalArgumentException("Ya existe una calidad con ese nombre.");
+        }
+        calidad.setNombre(nombre);
+        return repository.save(calidad);
+    }
+
+    // Nombre obligatorio, sin espacios de mas y maximo 50 caracteres
+    private String validarNombre(String texto) {
+        if (texto == null || texto.isBlank()) {
+            throw new IllegalArgumentException("El nombre de la calidad es obligatorio.");
+        }
+        String nombre = texto.trim().replaceAll("\\s+", " ");
+        if (nombre.length() > MAX_NOMBRE) {
+            throw new IllegalArgumentException(
+                    "El nombre de la calidad no puede superar los " + MAX_NOMBRE + " caracteres.");
+        }
+        return nombre;
     }
 }

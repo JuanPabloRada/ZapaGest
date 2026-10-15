@@ -8,6 +8,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,6 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
+import com.zapgest.backend.exceptions.RecursoNoEncontradoException;
 import com.zapgest.backend.models.Calidad;
 import com.zapgest.backend.repositories.CalidadRepository;
 
@@ -127,5 +129,63 @@ class CalidadServiceTest {
 
         assertThat(new CalidadService(repository).listar()).isEqualTo(delNegocio);
         verify(repository, never()).findAll();
+    }
+
+    // ---------- editar (PUT /api/calidades/{id}) ----------
+
+    @Test
+    void editarCambiaSoloElNombre() {
+        Calidad existente = calidad(5L, 1L, "Orignal", true);
+        when(repository.findByIdAndNegocioId(5L, 1L)).thenReturn(Optional.of(existente));
+        when(repository.save(any(Calidad.class))).thenAnswer(i -> i.getArgument(0));
+
+        Calidad editada = new CalidadService(repository).editar(5L, "  Original ");
+
+        assertThat(editada.getId()).isEqualTo(5L);
+        assertThat(editada.getNombre()).isEqualTo("Original");
+        assertThat(editada.getActiva()).isTrue();
+        verify(repository).existsByNegocioIdAndNombreIgnoreCaseAndIdNot(1L, "Original", 5L);
+    }
+
+    @Test
+    void editarPermiteGuardarElMismoNombreOCambiarMayusculas() {
+        // El repetido se busca IGNORANDO el propio registro (IdNot)
+        when(repository.findByIdAndNegocioId(5L, 1L)).thenReturn(Optional.of(calidad(5L, 1L, "aaa", true)));
+        when(repository.existsByNegocioIdAndNombreIgnoreCaseAndIdNot(1L, "AAA", 5L)).thenReturn(false);
+        when(repository.save(any(Calidad.class))).thenAnswer(i -> i.getArgument(0));
+
+        assertThat(new CalidadService(repository).editar(5L, "AAA").getNombre()).isEqualTo("AAA");
+    }
+
+    @Test
+    void editarRechazaUnNombreQueTieneOtraCalidad() {
+        when(repository.findByIdAndNegocioId(5L, 1L)).thenReturn(Optional.of(calidad(5L, 1L, "AA", true)));
+        when(repository.existsByNegocioIdAndNombreIgnoreCaseAndIdNot(1L, "Original", 5L)).thenReturn(true);
+
+        assertThatThrownBy(() -> new CalidadService(repository).editar(5L, "Original"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Ya existe una calidad con ese nombre.");
+        verify(repository, never()).save(any());
+    }
+
+    @Test
+    void editarValidaElNombreIgualQueAlCrear() {
+        when(repository.findByIdAndNegocioId(5L, 1L)).thenReturn(Optional.of(calidad(5L, 1L, "AA", true)));
+
+        assertThatThrownBy(() -> new CalidadService(repository).editar(5L, "  "))
+                .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("obligatorio");
+        assertThatThrownBy(() -> new CalidadService(repository).editar(5L, "x".repeat(51)))
+                .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("50");
+        verify(repository, never()).save(any());
+    }
+
+    @Test
+    void editarUnaCalidadQueNoExisteDa404() {
+        when(repository.findByIdAndNegocioId(99L, 1L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> new CalidadService(repository).editar(99L, "Nueva"))
+                .isInstanceOf(RecursoNoEncontradoException.class)
+                .hasMessage("No se encontró la calidad.");
+        verify(repository, never()).save(any());
     }
 }

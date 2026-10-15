@@ -16,6 +16,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.zapgest.backend.exceptions.RecursoNoEncontradoException;
 import com.zapgest.backend.models.Ubicacion;
 import com.zapgest.backend.repositories.UbicacionRepository;
 
@@ -182,5 +183,67 @@ class UbicacionServiceTest {
 
         assertThat(service().listar()).isEqualTo(delNegocio);
         verify(repository, never()).findAll();
+    }
+
+    // ---------- nombres repetidos al crear ----------
+
+    @Test
+    void crearRechazaUnNombreRepetidoSinImportarMayusculas() {
+        when(repository.existsByNegocioIdAndNombreIgnoreCase(NEGOCIO, "LOCAL")).thenReturn(true);
+
+        assertThatThrownBy(() -> service().crear(ubicacion(null, " LOCAL ", true)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Ya existe una ubicación con ese nombre.");
+        verify(repository, never()).save(any());
+    }
+
+    // ---------- editar (PUT /api/ubicaciones/{id}) ----------
+
+    @Test
+    void editarCambiaSoloElNombreYNoCuentaParaElLimite() {
+        Ubicacion u = ubicacion(3L, "Bodga 1", false);
+        when(repository.findByIdAndNegocioId(3L, NEGOCIO)).thenReturn(Optional.of(u));
+        when(repository.save(any(Ubicacion.class))).thenAnswer(i -> i.getArgument(0));
+
+        Ubicacion editada = service().editar(3L, "  Bodega   1 ");
+
+        assertThat(editada.getNombre()).isEqualTo("Bodega 1");
+        assertThat(editada.getActiva()).isFalse(); // el estado no cambia
+        verify(repository, never()).countByNegocioIdAndActivaTrue(any());
+        verify(repository).existsByNegocioIdAndNombreIgnoreCaseAndIdNot(NEGOCIO, "Bodega 1", 3L);
+    }
+
+    @Test
+    void editarRechazaUnNombreQueTieneOtraUbicacion() {
+        when(repository.findByIdAndNegocioId(3L, NEGOCIO)).thenReturn(Optional.of(ubicacion(3L, "Bodega 1", true)));
+        when(repository.existsByNegocioIdAndNombreIgnoreCaseAndIdNot(NEGOCIO, "Local", 3L)).thenReturn(true);
+
+        assertThatThrownBy(() -> service().editar(3L, "Local"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Ya existe una ubicación con ese nombre.");
+        verify(repository, never()).save(any());
+    }
+
+    @Test
+    void editarValidaNombreVacioYLargo() {
+        when(repository.findByIdAndNegocioId(3L, NEGOCIO)).thenReturn(Optional.of(ubicacion(3L, "Bodega 1", true)));
+
+        assertThatThrownBy(() -> service().editar(3L, ""))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("El nombre de la ubicación es obligatorio.");
+        assertThatThrownBy(() -> service().editar(3L, "x".repeat(81)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("80");
+        verify(repository, never()).save(any());
+    }
+
+    @Test
+    void editarUnaUbicacionQueNoExisteDa404() {
+        when(repository.findByIdAndNegocioId(50L, NEGOCIO)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service().editar(50L, "Nueva"))
+                .isInstanceOf(RecursoNoEncontradoException.class)
+                .hasMessage("No se encontró la ubicación.");
+        verify(repository, never()).save(any());
     }
 }

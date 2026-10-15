@@ -282,11 +282,11 @@ function dibujarFilasPrecios() {
             return `
             <tr data-i="${i}">
                 <td>${nombre}</td>
-                <td><input type="number" min="0" step="1" data-campo="costo"
+                <td><input type="text" inputmode="decimal" data-campo="costo"
                     value="${escapar(f.costo)}" placeholder="0" aria-label="Costo ${nombre}"></td>
-                <td><input type="number" min="0" step="1" data-campo="precioMinimo"
+                <td><input type="text" inputmode="decimal" data-campo="precioMinimo"
                     value="${escapar(f.precioMinimo)}" placeholder="0" aria-label="Precio mínimo ${nombre}"></td>
-                <td><input type="number" min="0" step="1" data-campo="precioVenta"
+                <td><input type="text" inputmode="decimal" data-campo="precioVenta"
                     value="${escapar(f.precioVenta)}" placeholder="0" aria-label="Precio sugerido ${nombre}"></td>
                 <td><button type="button" class="quitar-fila" aria-label="Quitar ${nombre}">×</button></td>
             </tr>`;
@@ -300,6 +300,14 @@ async function cargarCalidades() {
     calidadesCargadas = await obtenerCalidades();
     sinCalidades.hidden = calidadesCargadas.length > 0;
     dibujarSelectCalidad();
+}
+
+function parsePrecio(texto) {
+    const valor = texto.trim();
+    if (!/^(?:\d+|\d{1,3}(?:\.\d{3})+)$/.test(valor)) return null;
+
+    const numero = Number(valor.replace(/\./g, ""));
+    return Number.isSafeInteger(numero) ? numero : null;
 }
 
 // Devuelve { precios } o { error }
@@ -317,9 +325,13 @@ function leerPrecios() {
             return { error: `En "${nombre}" completa el costo, el precio mínimo y el precio sugerido.` };
         }
 
-        const costo = Number(f.costo);
-        const precioMinimo = Number(f.precioMinimo);
-        const precioVenta = Number(f.precioVenta);
+        const costo = parsePrecio(f.costo);
+        const precioMinimo = parsePrecio(f.precioMinimo);
+        const precioVenta = parsePrecio(f.precioVenta);
+
+        if (costo === null || precioMinimo === null || precioVenta === null) {
+            return { error: `En "${nombre}" ingresa precios enteros, con o sin puntos de miles (por ejemplo, 150000 o 150.000).` };
+        }
 
         if (costo < 0 || precioMinimo <= 0 || precioVenta <= 0) {
             return { error: `Revisa los valores de "${nombre}".` };

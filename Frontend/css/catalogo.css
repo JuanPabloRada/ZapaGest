@@ -234,17 +234,6 @@ button.secundario {
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
 
-/* Quita las flechitas de los inputs numéricos */
-#tablaPrecios input[type="number"] {
-    -moz-appearance: textfield;
-    appearance: textfield;
-}
-#tablaPrecios input[type="number"]::-webkit-outer-spin-button,
-#tablaPrecios input[type="number"]::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-}
-
 button.quitar-fila {
     width: 28px;
     height: 28px;

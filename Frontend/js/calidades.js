@@ -33,18 +33,26 @@ function guardarCalidad(datos) {
     return apiFetch("/calidades", { method: "POST", body: JSON.stringify(datos) });
 }
 
-// OJO: este endpoint debe existir en el backend (pídeselo a Joseph).
-// PUT /api/calidades/{id} con { "nombre": "..." }
+
 function actualizarCalidad(id, datos) {
     return apiFetch(`/calidades/${id}`, { method: "PUT", body: JSON.stringify(datos) });
 }
 
 // ===== PANTALLA =====
 
+
 function mostrarMensaje(texto, tipo) {
+    if (!mensaje) {
+        console.error(
+            'No se encontró el elemento HTML con id="mensaje".'
+        );
+        return;
+    }
+
     mensaje.textContent = texto;
     mensaje.className = "mensaje " + (tipo || "");
 }
+
 
 // Evita que se inserte HTML escrito por el usuario en la tabla
 function escapar(texto) {

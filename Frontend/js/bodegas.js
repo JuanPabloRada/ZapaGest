@@ -50,8 +50,7 @@ function guardarBodega(datos) {
     return apiFetch("/ubicaciones", { method: "POST", body: JSON.stringify(datos) });
 }
 
-// OJO: este endpoint debe existir en el backend (pídeselo a Joseph).
-// PUT /api/ubicaciones/{id} con { "nombre": "..." }
+
 function actualizarBodega(id, datos) {
     return apiFetch(`/ubicaciones/${id}`, { method: "PUT", body: JSON.stringify(datos) });
 }
@@ -66,10 +65,19 @@ function cambiarEstadoBodega(id, activa) {
 
 // ===== PANTALLA =====
 
+
 function mostrarMensaje(texto, tipo) {
+    if (!mensaje) {
+        console.error(
+            'No se encontró el elemento HTML con id="mensaje".'
+        );
+        return;
+    }
+
     mensaje.textContent = texto;
     mensaje.className = "mensaje " + (tipo || "");
 }
+
 
 // Evita que se inserte HTML escrito por el usuario en la tabla
 function escapar(texto) {

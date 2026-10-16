@@ -1,0 +1,343 @@
+/* Estilos solo para la pantalla de Catálogo.
+   Se apoya en .panel, .form-group, .tabla, .mensaje, etc. */
+
+.dashboard .panel + .panel {
+    margin-top: 20px;
+}
+
+.panel h2{
+    font-size: 30px;
+    font-family: 'Poppins', sans-serif;
+}
+
+.panel-catalogo {
+    margin-bottom: 20px;
+}
+
+fieldset {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 14px 16px 16px;
+    margin: 0 0 16px;
+}
+
+legend {
+    font-weight: 600;
+    padding: 10px 6px;
+    font-size: 20px;
+}
+
+.fila-3 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);   /* 4 campos, 4 columnas iguales */
+    gap: 16px;
+    align-items: start;                      /* todos arrancan a la misma altura */
+}
+
+.fila-3 .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 0;                               /* quita sangrías que vengan de otros CSS */
+    padding: 0;
+    min-width: 0;                            /* evita que un input empuje la columna */
+}
+
+.fila-3 label {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.fila-3 input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px 12px;
+    border: 2px solid #0f203e;
+    border-radius: 8px;
+    font-size: 16px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.fila-3 input:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+/* Responsive: 2 columnas en tablet, 1 en celular */
+@media (max-width: 1000px) {
+    .fila-3 { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 600px) {
+    .fila-3 { grid-template-columns: 1fr; }
+}
+/* ----- Desplegables y etiquetas de colores y tallas ----- */
+.desplegable {
+    width: 100%;
+    max-width: 380px;
+    padding: 8px 10px;
+    border: 2px solid #0f203e;
+    color: #0f203e;
+}
+.desplegable option {
+    padding: 8px 10px;
+    background:#0f203e;
+    color: #fff;
+}
+
+.desplegable[arial-label]{
+    color:#6b7280
+}
+
+select:focus {
+  outline: none;
+}
+
+
+.desplegable:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px #2563eb26;
+}
+
+.agregar-chip {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    max-width: 480px;
+    margin-top: 10px;
+}
+
+.agregar-chip input {
+    flex: 1;
+    min-width: 160px;
+    box-sizing: border-box;
+    padding: 9px 12px;
+    border: 2px solid #0f203e;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.agregar-chip input:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+
+.agregar-chip button {
+    margin: 0;
+    padding: 9px 14px;
+}
+
+
+.tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 6px 4px 12px;
+    border-radius: 999px;
+    background: #1f3a5f;
+    color: #fff;
+}
+
+.tag button {
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.25);
+    color: #fff;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.tag button:hover {
+    background: rgba(255, 255, 255, 0.45);
+}
+
+button.secundario {
+    color: #fff;
+    border: 1px solid #1f3a5f;
+}
+
+/* ----- Resumen, ayuda y aviso ----- */
+.resumen {
+    margin: 0 0 16px;
+    font-weight: 600;
+}
+
+.ayuda {
+    margin: 0 0 10px;
+    color: #6b7280;
+}
+
+.aviso {
+    margin: 0 0 16px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    background: #fff7e6;
+    color: #0f203e;
+}
+
+/* ----- Tabla de precios ----- */
+
+#tablaPrecios {
+    width: 100%;
+    margin-top: 12px;
+    border-collapse: collapse;
+}
+
+#tablaPrecios th,
+#tablaPrecios td {
+    padding: 8px 6px;
+    vertical-align: middle;
+    text-align: left;
+}
+
+#tablaPrecios th {
+    font-size: 13px;
+    white-space: nowrap;          /* "Precio mínimo" en una sola línea */
+}
+
+#tablaPrecios td:first-child {
+    white-space: nowrap;          /* el nombre de la calidad no se parte */
+    font-weight: 600;
+}
+
+#tablaPrecios input {
+    width: 100%;
+    min-width: 80px;              /* antes 110px: era lo que desbordaba */
+    max-width: 140px;
+    box-sizing: border-box;       /* el padding ya no ensancha el input */
+    padding: 8px 10px;
+    border: 2px solid #0f203e;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+#tablaPrecios input:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+button.quitar-fila {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    margin: 0;                    /* por si hereda el margin auto de .panel button */
+    border-radius: 50%;
+    background: #0f203e;
+    color: #fff;
+    line-height: 1;
+    cursor: pointer;
+}
+
+button.quitar-fila:hover {
+    background: #2563eb;
+}
+
+.tabla-scroll {
+    overflow-x: auto;
+}
+
+/* ----- Tabla de precios en pantallas pequeñas: campos apilados ----- */
+@media (max-width: 900px) {
+
+    /* Ocultamos los encabezados; las etiquetas se ponen en cada celda */
+    #tablaPrecios thead {
+        display: none;
+    }
+
+    #tablaPrecios tbody,
+    #tablaPrecios tr,
+    #tablaPrecios td {
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    /* Cada fila es una tarjeta */
+    #tablaPrecios tr {
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 12px;
+        margin-bottom: 12px;
+    }
+
+    #tablaPrecios td {
+        padding: 6px 0;
+        border: none;
+    }
+
+    /* Etiqueta encima de cada campo */
+    #tablaPrecios td::before {
+        display: block;
+        margin-bottom: 4px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #0f203e;
+    }
+
+    #tablaPrecios td:nth-child(1)::before { content: "Calidad"; }
+    #tablaPrecios td:nth-child(2)::before { content: "Costo"; }
+    #tablaPrecios td:nth-child(3)::before { content: "Precio mínimo"; }
+    #tablaPrecios td:nth-child(4)::before { content: "Precio de venta"; }
+
+    /* Inputs a todo el ancho de la tarjeta */
+    #tablaPrecios input {
+        max-width: 100%;
+        min-width: 0;
+    }
+
+    /* El botón de quitar, sin etiqueta y a la derecha */
+    #tablaPrecios td:nth-child(5) {
+        display: flex;
+        justify-content: flex-end;
+    }
+}
+
+.error-campo {
+    margin-top: 6px;
+    font-size: 14px;
+    color: #b42318;
+}
+
+.agregar-chip input.invalido {
+    border-color: #b42318;
+}
+
+.btn-volver {
+    margin: 10px 0 0;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 8px;
+    background: #0f203e;
+    color: #fff;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-volver:hover {
+    background: #2563eb;
+}
+
+.btn-volver[hidden] {
+    display: none;
+}

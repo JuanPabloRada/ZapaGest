@@ -1,0 +1,186 @@
+/* Estilos solo para la pantalla de Bodegas.
+   Reutiliza .panel, .form-group, .topbar, etc. de style.css y dashboard.css.
+   Si algún color no coincide, cámbialo por las variables de tu proyecto. */
+
+.bodegas-grid {
+    /* display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 20px;
+    align-items: start; */
+    padding: 30px;
+}
+.panel{
+    margin-bottom: 20px;
+}
+.form-group {
+    margin: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    font-size: 20px;
+    color: #0f203e;
+}
+.form-group input {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #0f203e;
+    border-radius: 5px;
+    font-size: 16px;
+}
+.form-group input:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 5px rgba(37, 99, 235, 0.5);
+}
+.form-group input:focus::placeholder{
+    color:#0f203e;
+}
+
+.panel button {
+    display: flex;       /* flex pero sin ocupar todo el ancho */
+    align-items: center;
+    justify-content: center;
+    gap: 8px;                   /* espacio entre ícono y texto */
+    padding: 10px 16px;
+    border: none;               /* quita el borde gris por defecto */
+    border-radius: 8px;
+    background: #0f203e;
+    color: #fff;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+}
+
+#guardarBtn {
+    margin: 16px auto 0;
+}
+
+.panel button:hover {
+    background: #2563eb;     /* el mismo azul que usas en el resto */
+    color: #fff;
+    
+}
+
+.panel-encabezado {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+.panel-lista{
+    background: #0f203e;
+    color: #fff;
+    margin-top: 15px;
+}
+
+.contador {
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: #2563eb;
+}
+
+.contador.lleno {
+    background: #fde8e8;
+    color: #b42318;
+}
+
+.tabla {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tabla th,
+.tabla td {
+    text-align: left;
+    padding: 10px 8px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.mensaje {
+    margin-top: 10px;
+    min-height: 1.2em;
+}
+
+.mensaje.error {
+    color: #b42318;
+}
+
+.mensaje.ok {
+    color: #107a3e;
+}
+
+.vacio {
+    padding: 16px 0;
+    color: #6b7280;
+}
+
+button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.estado {
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+}
+.estado.activa   { background: #dcfce7; color: #107a3e; }
+.estado.inactiva { background: #e5e7eb; color: #4b5563; }
+
+.tabla .btn-estado {
+    margin: 0;
+    padding: 6px 12px;
+    background: transparent;
+    border: 1px solid #fff;
+    color: #fff;
+    font-size: 13px;
+}
+.tabla .btn-estado:hover {
+    background: #2563eb;
+    border-color: #2563eb;
+}
+
+@media (max-width: 900px) {
+    .bodegas-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+   .tabla .btn-editar {
+       display: inline-flex;
+       align-items: center;
+       gap: 6px;
+       padding: 6px 12px;
+       border: 1px solid #fff;
+       border-radius: 8px;
+       color: #fff;
+       font-size: 13px;
+       text-decoration: none;
+   }
+   .tabla .btn-editar:hover {
+       background: #2563eb;
+       border-color: #2563eb;
+   }
+
+   .acciones-form {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+}
+
+/* Sin esto, el hidden del botón Cancelar no funciona: .panel button usa display:flex */
+.panel button[hidden] {
+    display: none;
+}
+
+.acciones {
+    display: flex;
+    gap: 8px;
+}

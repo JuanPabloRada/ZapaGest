@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZapaGest - Catálogo</title>
+    <link rel="icon" href="img/logo software.png" type="image/svg+xml">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/bodegas.css"> <!-- tabla, mensajes, contador -->
+    <link rel="stylesheet" href="css/catalogo.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+
+<body>
+
+    <div class="app">
+
+        <!-- MENÚ LATERAL -->
+        <aside class="sidebar">
+
+            <div class="sidebar-logo">
+                <img src="img/logo principal.png" alt="ZapaGest">
+            </div>
+
+            <nav class="menu">
+
+                <a href="dashboard.html" class="menu-item">
+                    <i class="fa-solid fa-house"></i>
+                    <span>Inicio</span>
+                </a>
+
+                <a href="bodegas.html" class="menu-item">
+                    <i class="fa-solid fa-shop"></i>
+                    <span>Bodegas</span>
+                </a>
+
+                <a href="calidades.html" class="menu-item">
+                    <i class="fa-solid fa-pen"></i>
+                    <span>Calidades</span>
+                </a>
+
+                <a href="catalogo.html" class="menu-item active">
+                    <i class="fa-solid fa-folder-open"></i>
+                    <span>Catálogo</span>
+                </a>
+
+                <a href="modelos.html" class="menu-item">
+                    <i class="fa-solid fa-shoe-prints"></i>
+                    <span>Modelos</span>
+                </a>
+
+                <a href="usuarios.html" class="menu-item">
+                    <i class="fa-solid fa-users"></i>
+                    <span>Usuarios</span>
+                </a>
+
+            </nav>
+
+        </aside>
+
+        <!-- CONTENIDO -->
+        <main class="contenido">
+
+            <header class="topbar">
+
+                <div class="buscador">
+                    <input type="text" id="searchInput" placeholder="Buscar...">
+                </div>
+
+                <div class="usuario-menu">
+                    <button class="usuario" id="usuarioBtn" aria-expanded="false">
+                        <i class="fa-solid fa-circle-user avatar"></i>
+                        <div class="usuario-info">
+                            <strong></strong>
+                            <small class="rol"></small>
+                        </div>
+                        <i class="fa-solid fa-chevron-down flecha"></i>
+                    </button>
+
+                    <div class="dropdown" id="usuarioDropdown">
+                        <div class="dropdown-perfil">
+                            <i class="fa-solid fa-circle-user"></i>
+                            <div>
+                                <strong></strong>
+                                <small class="rol"></small>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <button id="logoutButton" class="dropdown-item logout">
+                            <i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión
+                        </button>
+                    </div>
+                </div>
+
+            </header>
+
+            <section class="dashboard">
+
+                <div class="panel-catalogo">
+                    <h1>Catálogo</h1>
+                    <p class="descripcion">
+                        Registra tus modelos
+                    </p>
+                    <!-- Solo se muestra al editar (catalogo.js) -->
+                    <button type="button" id="volverModelos" class="btn-volver" hidden> Volver a modelos</button>
+                </div>
+
+                <!-- FORMULARIO (sirve para crear y para editar) -->
+                <section class="panel">
+                    <h2 id="tituloForm">Nuevo modelo</h2>
+
+                    <form id="modeloForm" novalidate>
+
+                        <!-- 1. Datos del modelo -->
+                        <fieldset>
+                            <legend>Datos del modelo</legend>
+
+                            <div class="fila-3">
+                                <div class="form-group">
+                                    <label for="referencia">Referencia</label>
+                                    <input type="text" id="referencia" placeholder="Ej. AF1-001" maxlength="30">
+                                </div>
+                                <div class="form-group">
+                                    <label for="nombre">Nombre del modelo</label>
+                                    <input type="text" id="nombre" placeholder="Ej. Nike Air Force" maxlength="80">
+                                </div>
+                                <div class="form-group">
+                                    <label for="marca">Marca</label>
+                                    <input type="text" id="marca" placeholder="Ej. Nike" maxlength="40">
+                                </div>
+                            </div>
+                        </fieldset>
+
+                        <!-- 2. Colores -->
+                        <fieldset>
+                            <legend>Colores</legend>
+                            <select id="selectColor" class="desplegable" aria-label="Elegir color"></select>
+                            <div id="nuevoColorWrap" class="agregar-chip" hidden>
+                                <input type="text" id="nuevoColor" placeholder=" Nombre del nuevo color" maxlength="30">
+                                <button type="button" id="btnAgregarColor" class="secundario">Añadir</button>
+                                <button type="button" id="btnCancelarColor" class="secundario">Cancelar</button>
+                            </div>
+                            <p id="errorNuevoColor" class="error-campo" role="alert" hidden></p>
+                            <div id="tagsColores" class="tags"></div>
+                        </fieldset>
+
+                        <!-- 3. Tallas -->
+                        <fieldset>
+                            <legend>Tallas</legend>
+                            <select id="selectTalla" class="desplegable" aria-label="Elegir talla"></select>
+                            <div id="tagsTallas" class="tags"></div>
+                        </fieldset>
+
+                        <p id="resumenVariantes" class="resumen">
+                            Elige colores y tallas para ver cuántas combinaciones tendrá el modelo.
+                        </p>
+
+                        <!-- 4. Calidades y precios -->
+                        <fieldset>
+                            <legend>Calidades y precios</legend>
+                            <p class="ayuda">
+                                Elige una calidad ya creada y define su costo, el precio mínimo al que puedes
+                                venderla y su precio sugerido. Puedes añadir varias calidades con precios distintos.
+                                Escribe los precios con o sin puntos de miles (por ejemplo, 150000 o 150.000).
+                            </p>
+
+                            <select id="selectCalidad" class="desplegable" aria-label="Elegir calidad"></select>
+
+                            <p id="sinCalidades" class="vacio" hidden>
+                                Primero crea al menos una calidad en <a href="calidades.html">Calidades</a>.
+                            </p>
+
+                            <div class="tabla-scroll">
+                                <table class="tabla" id="tablaPrecios" hidden>
+                                    <thead>
+                                        <tr>
+                                            <th>Calidad</th>
+                                            <th>Costo</th>
+                                            <th>Precio mínimo</th>
+                                            <th>Precio sugerido</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </fieldset>
+
+                        <p id="avisoStock" class="aviso">
+                            📦 El stock de cada combinación queda en 0. Las cantidades se cargan después, en inventario.
+                        </p>
+
+                        <button type="submit" id="guardarBtn">Guardar modelo</button>
+                        <p id="mensaje" class="mensaje" role="status"></p>
+
+                    </form>
+                </section>
+
+            </section>
+
+        </main>
+
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/menu-rol.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/catalogo.js"></script>
+
+</body>
+
+</html>

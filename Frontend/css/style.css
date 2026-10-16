@@ -1,0 +1,351 @@
+/* =========================================
+   CONFIGURACIÓN GENERAL
+========================================= */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: #f8f8f8;
+    color: #222;
+}
+
+
+/* =========================================
+   ENCABEZADO
+========================================= */
+
+.encabezado {
+    width: 100%;
+    height: 75px;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 0 60px;
+
+    background-color: #ffffff;
+
+    border-bottom: 1px solid #e5e5e5;
+
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+
+/* Logo */
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.logo img {
+    width: 45px;
+    height: 45px;
+    object-fit: contain;
+}
+
+.logo span {
+    font-size: 24px;
+    font-weight: bold;
+    color: #222;
+}
+
+
+/* Menú */
+
+nav {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+}
+
+nav a {
+    text-decoration: none;
+    color: #333;
+
+    font-size: 15px;
+    font-weight: 500;
+
+    transition: 0.3s;
+}
+
+nav a:hover {
+    color: #8B5E3C;
+}
+
+
+/* =========================================
+   SECCIÓN PRINCIPAL - HERO
+========================================= */
+
+.hero {
+    min-height: 600px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 70px 10%;
+
+    background-color: #f3eee9;
+}
+
+
+/* Texto */
+
+.hero-texto {
+    max-width: 600px;
+}
+
+.hero-texto h1 {
+    font-size: 48px;
+    line-height: 1.15;
+
+    margin-bottom: 25px;
+
+    color: #222;
+}
+
+.hero-texto p {
+    font-size: 18px;
+    line-height: 1.7;
+
+    color: #555;
+
+    margin-bottom: 35px;
+}
+
+
+/* Botón */
+
+.boton {
+    display: inline-block;
+
+    padding: 14px 30px;
+
+    background-color: #8B5E3C;
+    color: white;
+
+    text-decoration: none;
+
+    border-radius: 8px;
+
+    font-size: 16px;
+    font-weight: bold;
+
+    transition: 0.3s;
+}
+
+.boton:hover {
+    background-color: #68452c;
+
+    transform: translateY(-2px);
+}
+
+
+/* Logo grande */
+
+.hero-logo {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    width: 40%;
+}
+
+.hero-logo img {
+    width: 320px;
+    max-width: 100%;
+
+    object-fit: contain;
+}
+
+
+/* =========================================
+   SECCIÓN ¿QUÉ ES ZAPAGEST?
+========================================= */
+
+#nosotros {
+    padding: 90px 15%;
+
+    text-align: center;
+
+    background-color: #ffffff;
+}
+
+#nosotros h2 {
+    font-size: 32px;
+
+    margin-bottom: 25px;
+
+    color: #222;
+}
+
+#nosotros p {
+    max-width: 800px;
+
+    margin: 0 auto;
+
+    font-size: 17px;
+    line-height: 1.8;
+
+    color: #555;
+}
+
+
+/* =========================================
+   FUNCIONES
+========================================= */
+
+#funciones {
+    padding: 90px 10%;
+
+    background-color: #f8f8f8;
+
+    text-align: center;
+}
+
+#funciones h2 {
+    font-size: 32px;
+
+    margin-bottom: 50px;
+
+    color: #222;
+}
+
+
+/* Contenedor de tarjetas */
+
+.funciones {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+
+    flex-wrap: wrap;
+}
+
+
+/* Tarjetas */
+
+.funciones article {
+    width: 280px;
+
+    padding: 30px 25px;
+
+    background-color: white;
+
+    border-radius: 12px;
+
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+
+    transition: 0.3s;
+}
+
+.funciones article:hover {
+    transform: translateY(-5px);
+
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+.funciones h3 {
+    font-size: 21px;
+
+    margin-bottom: 15px;
+
+    color: #8B5E3C;
+}
+
+.funciones p {
+    font-size: 15px;
+
+    line-height: 1.6;
+
+    color: #555;
+}
+
+
+/* =========================================
+   PIE DE PÁGINA
+========================================= */
+
+footer {
+    padding: 25px;
+
+    text-align: center;
+
+    background-color: #222;
+
+    color: #ffffff;
+
+    font-size: 14px;
+}
+
+/* =========================================
+   DISEÑO PARA CELULARES
+========================================= */
+
+@media (max-width: 768px) {
+
+    .encabezado {
+        height: auto;
+
+        padding: 20px;
+
+        flex-direction: column;
+
+        gap: 20px;
+    }
+
+    nav {
+        flex-wrap: wrap;
+
+        justify-content: center;
+
+        gap: 15px;
+    }
+
+    .hero {
+        flex-direction: column;
+
+        text-align: center;
+
+        padding: 60px 25px;
+    }
+
+    .hero-texto h1 {
+        font-size: 36px;
+    }
+
+    .hero-texto p {
+        font-size: 16px;
+    }
+
+    .hero-logo {
+        width: 100%;
+
+        margin-top: 50px;
+    }
+
+    .hero-logo img {
+        width: 230px;
+    }
+
+    #nosotros,
+    #funciones {
+        padding: 60px 25px;
+    }
+
+}

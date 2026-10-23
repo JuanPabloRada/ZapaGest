@@ -6,8 +6,13 @@ if (!tienePermiso) document.querySelector(".dashboard").hidden = true;
 const tbodyModelos = document.querySelector("#tablaModelos tbody");
 const textoVacio = document.getElementById("vacio");
 const contador = document.getElementById("contador");
-const buscador = document.getElementById("searchInput");
 const mensaje = document.getElementById("mensaje");
+
+// Barra de filtros
+const filtroTexto = document.getElementById("filtroTexto");
+const filtroMarca = document.getElementById("filtroMarca");
+const btnBuscar = document.getElementById("btnBuscar");
+const btnLimpiar = document.getElementById("btnLimpiar");
 
 let modelos = [];
 let calidades = [];
@@ -28,12 +33,30 @@ function dinero(numero) {
     return "$" + Number(numero).toLocaleString("es-CO");
 }
 
+// ===== FILTRO DE MARCAS =====
+function llenarMarcas() {
+    if (!filtroMarca) return;
+    const seleccionada = filtroMarca.value;
+    const marcas = [...new Set(modelos.map(m => m.marca).filter(Boolean))].sort();
+
+    filtroMarca.innerHTML =
+        '<option value="">Todas las marcas</option>' +
+        marcas.map(m => `<option value="${escapar(m)}">${escapar(m)}</option>`).join("");
+
+    filtroMarca.value = marcas.includes(seleccionada) ? seleccionada : "";
+}
+
 // ===== LISTA =====
 function dibujarModelos() {
-    const filtro = buscador.value.trim().toLowerCase();
-    const visibles = modelos.filter(m =>
-        [m.referencia, m.nombre, m.marca].some(t => (t ?? "").toLowerCase().includes(filtro))
-    );
+    const texto = (filtroTexto?.value || "").trim().toLowerCase();
+    const marca = filtroMarca?.value || "";
+
+    const visibles = modelos.filter(m => {
+        const coincideTexto = !texto ||
+            [m.referencia, m.nombre, m.marca].some(t => (t ?? "").toLowerCase().includes(texto));
+        const coincideMarca = !marca || m.marca === marca;
+        return coincideTexto && coincideMarca;
+    });
 
     tbodyModelos.innerHTML = visibles
         .map(m => {
@@ -57,8 +80,9 @@ function dibujarModelos() {
         })
         .join("");
 
+    // Vacío solo si no hay modelos en total; contador muestra los visibles
     textoVacio.hidden = modelos.length > 0;
-    contador.textContent = modelos.length;
+    contador.textContent = visibles.length;
 }
 
 async function cargarModelos() {
@@ -66,11 +90,19 @@ async function cargarModelos() {
         apiFetch("/catalogo"),
         apiFetch("/calidades"),
     ]);
+    llenarMarcas();
     dibujarModelos();
 }
 
 // ===== EVENTOS =====
-buscador.addEventListener("input", dibujarModelos);
+filtroTexto?.addEventListener("input", dibujarModelos);
+filtroMarca?.addEventListener("change", dibujarModelos);
+btnBuscar?.addEventListener("click", dibujarModelos);
+btnLimpiar?.addEventListener("click", () => {
+    if (filtroTexto) filtroTexto.value = "";
+    if (filtroMarca) filtroMarca.value = "";
+    dibujarModelos();
+});
 
 document.addEventListener("DOMContentLoaded", async () => {
     if (!tienePermiso) return;

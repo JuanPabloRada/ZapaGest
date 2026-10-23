@@ -41,3 +41,23 @@ if (logoutButton) {
         if (e.key === "Escape") cerrarMenu();
     });
 })();
+
+(function () {
+    const app = document.querySelector('.app');
+    const btn = document.getElementById('menuToggle');
+    if (!app || !btn) return;   // en las páginas sin botón no hace nada
+
+    // Recordar el estado entre páginas
+    try {
+        if (localStorage.getItem('menuOculto') === '1') {
+            app.classList.add('menu-oculto');
+            btn.setAttribute('aria-expanded', 'false');
+        }
+    } catch (e) {}
+
+    btn.addEventListener('click', () => {
+        const oculto = app.classList.toggle('menu-oculto');
+        btn.setAttribute('aria-expanded', String(!oculto));
+        try { localStorage.setItem('menuOculto', oculto ? '1' : '0'); } catch (e) {}
+    });
+})();

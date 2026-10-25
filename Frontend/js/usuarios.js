@@ -11,7 +11,7 @@ const botonGuardarUsuario = document.getElementById("guardarBtn");
 const cuerpoTablaUsuarios = document.querySelector("#tablaUsuarios tbody");
 const contadorUsuarios = document.getElementById("contador");
 const textoSinUsuarios = document.getElementById("vacio");
-const buscadorUsuarios = document.getElementById("searchInput");
+const buscadorUsuarios = document.getElementById("searchInput"); // puede ser null
 
 let usuarios = [];
 
@@ -22,9 +22,29 @@ function etiquetaRol(rol) {
     return ETIQUETAS_ROL[rol] || rol || "";
 }
 
+// ===== ACCESO A DATOS (API) =====
+
+function obtenerUsuarios() {
+    return apiFetch("/usuarios");
+}
+
+function crearUsuario(datos) {
+    return apiFetch("/usuarios", { method: "POST", body: JSON.stringify(datos) });
+}
+
+// Ruta supuesta: PATCH /api/usuarios/{id} con { activo: true|false }
+// Si el backend usa otra ruta, solo hay que cambiar esta función.
+function cambiarEstadoUsuario(id, activo) {
+    return apiFetch(`/usuarios/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ activo }),
+    });
+}
+
 // ===== UTILIDADES =====
 
 function mostrarMensajeUsuario(texto, tipo = "") {
+    if (!mensajeUsuario) return;
     mensajeUsuario.textContent = texto;
     mensajeUsuario.className = `mensaje ${tipo}`;
 }
@@ -38,37 +58,48 @@ function textoError(error) {
 function escaparUsuario(texto) {
     const elemento = document.createElement("span");
     elemento.textContent = texto ?? "";
-    return elemento.innerHTML;
+    return elemento.innerHTML.replace(/"/g, "&quot;");
 }
 
 // ===== PANTALLA =====
 
 function dibujarUsuarios() {
-    const filtro = buscadorUsuarios.value.trim().toLowerCase();
+    const filtro = (buscadorUsuarios?.value || "").trim().toLowerCase();
     const visibles = usuarios.filter(usuario =>
-        `${usuario.nombre} ${usuario.username} ${etiquetaRol(usuario.rol)}`.toLowerCase().includes(filtro)
+        `${usuario.nombre} ${usuario.username} ${etiquetaRol(usuario.rol)}`
+            .toLowerCase()
+            .includes(filtro)
     );
 
-    cuerpoTablaUsuarios.innerHTML = visibles.map(usuario => `
-        <tr>
-            <td>${escaparUsuario(usuario.nombre)}</td>
-            <td>${escaparUsuario(usuario.username)}</td>
-            <td>${escaparUsuario(etiquetaRol(usuario.rol))}</td>
-            <td>${usuario.activo !== false ? "Activo" : "Inactivo"}</td>
-        </tr>
-    `).join("");
+    cuerpoTablaUsuarios.innerHTML = visibles.map(usuario => {
+        const activo = usuario.activo !== false;
+        return `
+            <tr>
+                <td>${escaparUsuario(usuario.nombre)}</td>
+                <td>${escaparUsuario(usuario.username)}</td>
+                <td>${escaparUsuario(etiquetaRol(usuario.rol))}</td>
+                <td><span class="estado ${activo ? "activa" : "inactiva"}">${activo ? "Activo" : "Inactivo"}</span></td>
+                <td>
+                    <button type="button" class="btn-estado btn-cambiar-estado"
+                        data-id="${escaparUsuario(String(usuario.id))}"
+                        data-activo="${activo}">
+                        ${activo ? "Desactivar" : "Activar"}</button>
+                </td>
+            </tr>`;
+    }).join("");
 
     contadorUsuarios.textContent = String(usuarios.length);
     textoSinUsuarios.hidden = usuarios.length > 0;
 }
 
 async function cargarUsuarios() {
-    usuarios = await apiFetch("/usuarios");
+    usuarios = await obtenerUsuarios();
     dibujarUsuarios();
 }
 
 // ===== EVENTOS =====
 
+// Crear usuario
 formUsuario.addEventListener("submit", async event => {
     event.preventDefault();
     if (!esDueno) return;
@@ -83,7 +114,7 @@ formUsuario.addEventListener("submit", async event => {
 
     botonGuardarUsuario.disabled = true; // evita doble clic
     try {
-        await apiFetch("/usuarios", { method: "POST", body: JSON.stringify(datos) });
+        await crearUsuario(datos);
         formUsuario.reset();
         mostrarMensajeUsuario("Usuario creado.", "ok");
         await cargarUsuarios();
@@ -94,7 +125,27 @@ formUsuario.addEventListener("submit", async event => {
     }
 });
 
+// Activar / Desactivar (un solo listener para todos los botones)
+cuerpoTablaUsuarios.addEventListener("click", async event => {
+    const boton = event.target.closest(".btn-cambiar-estado");
+    if (!boton || !esDueno) return;
+
+    const activar = boton.dataset.activo !== "true";
+    boton.disabled = true;
+    try {
+        await cambiarEstadoUsuario(boton.dataset.id, activar);
+        mostrarMensajeUsuario(activar ? "Usuario activado." : "Usuario desactivado.", "ok");
+        await cargarUsuarios();
+    } catch (error) {
+        mostrarMensajeUsuario(textoError(error), "error");
+        boton.disabled = false;
+    }
+});
+
+// Buscador del topbar (si existe en esta pantalla)
+buscadorUsuarios?.addEventListener("input", dibujarUsuarios);
+
+// Carga inicial
 if (esDueno) {
-    buscadorUsuarios.addEventListener("input", dibujarUsuarios);
     cargarUsuarios().catch(error => mostrarMensajeUsuario(textoError(error), "error"));
 }

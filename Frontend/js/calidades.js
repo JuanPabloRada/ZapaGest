@@ -82,7 +82,7 @@ function salirModoEdicion() {
 
 function dibujarTabla(lista) {
     calidadesActuales = lista;
-    const filtro = buscador.value.trim().toLowerCase();
+    const filtro = (buscador?.value || "").trim().toLowerCase();
     const visibles = lista.filter(c => c.nombre.toLowerCase().includes(filtro));
 
     tbody.innerHTML = visibles
@@ -161,6 +161,6 @@ tbody.addEventListener("click", function (event) {
     if (calidad) entrarModoEdicion(calidad);
 });
 
-buscador.addEventListener("input", cargarCalidades);
+buscador?.addEventListener("input", dibujarLista);
 
 document.addEventListener("DOMContentLoaded", cargarCalidades);

@@ -24,6 +24,7 @@
     font-weight: 600;
     padding: 3px 12px;
     border-radius: 999px;
+    margin-left: auto;
 }
 
 
@@ -34,6 +35,9 @@
     align-items: center;
     gap: 10px;
     margin-bottom: 16px;
+    flex: 1;                /* ocupa todo el espacio libre de la barra superior */
+    margin-bottom: 20px;
+    flex-wrap: nowrap;
 }
 
 .barra-filtros input,
@@ -42,7 +46,7 @@
     max-width: 280px;
     box-sizing: border-box;
     padding: 9px 12px;
-    border: 1px solid #cbd5e1;
+    border: 2px solid #0f203e;
     border-radius: 6px;
     background: #fff;
     color: #0f203e;
@@ -186,3 +190,4 @@
 .panel-lista .mensaje:empty {
     display: none;
 }
+

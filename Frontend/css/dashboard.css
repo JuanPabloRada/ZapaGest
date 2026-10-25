@@ -125,7 +125,7 @@ body {
     align-items: center;
     justify-content: space-between;
     padding: 10px 30px; /*arriba  derecha abajo izquierda*/
-    margin: 0 0 0 10px;
+    margin: 0 0 0 5px;
 }
 
 /* ===== Topbar con logo y botón de menú ===== */

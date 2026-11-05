@@ -1,0 +1,70 @@
+/* Estilos de Inventario y Buscador. Se apoya en style.css, dashboard.css y bodegas.css */
+
+.fila-form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+}
+
+.form-group select {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #0f203e;
+    border-radius: 5px;
+    font-size: 16px;
+    background: #fff;
+}
+
+.form-group select:focus,
+.buscar-barra input:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 5px rgba(37, 99, 235, 0.5);
+}
+
+.form-group select:disabled {
+    background: #f1f5f9;
+    cursor: not-allowed;
+}
+
+.precio-hint {
+    margin: 0 20px;
+    font-weight: 600;
+    color: #2563eb;
+}
+
+.buscar-barra input {
+    width: 100%;
+    padding: 14px 16px;
+    font-size: 18px;
+    border: 2px solid #0f203e;
+    border-radius: 8px;
+    box-sizing: border-box;
+}
+
+.filtros {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 14px 0;
+}
+
+.filtros select {
+    flex: 1;
+    min-width: 160px;
+    padding: 10px;
+    border: 2px solid #0f203e;
+    border-radius: 5px;
+    font-size: 15px;
+    background: #fff;
+}
+
+.estado-busqueda {
+    margin: 0 0 10px;
+    color: #6b7280;
+    min-height: 1.2em;
+}
+
+.tabla small { color: #6b7280; }
+.tabla tr.agotado td { color: #9ca3af; }
+.tabla .disponibilidad strong { color: #107a3e; }
+.tabla tr.agotado .disponibilidad strong { color: #9ca3af; }

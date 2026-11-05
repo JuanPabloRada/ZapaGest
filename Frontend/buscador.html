@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZapaGest - Buscar</title>
+    <link rel="icon" href="img/logo software.png" type="image/png">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/bodegas.css">
+    <link rel="stylesheet" href="css/inventario.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+
+<body>
+
+    <div class="app">
+
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <img src="img/logo principal.png" alt="ZapaGest">
+            </div>
+
+            <nav class="menu">
+
+                <a href="dashboard.html" class="menu-item">
+                    <i class="fa-solid fa-house"></i>
+                    <span>Inicio</span>
+                </a>
+
+                <a href="bodegas.html" class="menu-item">
+                    <i class="fa-solid fa-shop"></i>
+                    <span>Bodegas</span>
+                </a>
+
+                <a href="calidades.html" class="menu-item">
+                    <i class="fa-solid fa-pen"></i>
+                    <span>Calidades</span>
+                </a>
+
+                <a href="catalogo.html" class="menu-item">
+                    <i class="fa-solid fa-folder-open"></i>
+                    <span>Catálogo</span>
+                </a>
+
+                <a href="inventario.html" class="menu-item">
+                    <i class="fa-solid fa-boxes-stacked"></i>
+                    <span>Inventario</span>
+                </a>
+
+                <a href="buscador.html" class="menu-item active">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <span>Buscar</span>
+                </a>
+
+                <a href="usuarios.html" class="menu-item">
+                    <i class="fa-solid fa-users"></i>
+                    <span>Usuarios</span>
+                </a>
+
+            </nav>
+        </aside>
+
+        <main class="contenido">
+
+            <header class="topbar">
+                <div class="buscador">
+                    <input type="text" id="searchInput" placeholder="Buscar...">
+                </div>
+
+                <div class="usuario-menu">
+                    <button class="usuario" id="usuarioBtn" aria-expanded="false">
+                        <i class="fa-solid fa-circle-user avatar"></i>
+                        <div class="usuario-info">
+                            <strong></strong>
+                            <small class="rol"></small>
+                        </div>
+                        <i class="fa-solid fa-chevron-down flecha"></i>
+                    </button>
+
+                    <div class="dropdown" id="usuarioDropdown">
+                        <div class="dropdown-perfil">
+                            <i class="fa-solid fa-circle-user"></i>
+                            <div>
+                                <strong></strong>
+                                <small class="rol"></small>
+                            </div>
+                        </div>
+                        <hr>
+                        <button id="logoutButton" class="dropdown-item logout">
+                            <i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <section class="dashboard">
+
+                <h1>Buscar zapatos</h1>
+                <p class="descripcion">Mira qué hay disponible y filtra por referencia, nombre, color, talla o calidad.</p>
+
+                <section class="panel">
+                    <div class="buscar-barra">
+                        <input type="search" id="q" placeholder="Ej. AF1-001, Nike, Air Force..."
+                            autocomplete="off" aria-label="Buscar zapato">
+                    </div>
+
+                    <div class="filtros">
+                        <select id="filtroColor" aria-label="Filtrar por color"></select>
+                        <select id="filtroTalla" aria-label="Filtrar por talla"></select>
+                        <select id="filtroCalidad" aria-label="Filtrar por calidad"></select>
+                    </div>
+
+                    <p id="estado" class="estado-busqueda" role="status"></p>
+                    <p id="mensaje" class="mensaje" role="status"></p>
+
+                    <div class="tabla-scroll">
+                        <table class="tabla" id="tablaResultados">
+                            <thead>
+                                <tr>
+                                    <th>Referencia</th>
+                                    <th>Modelo</th>
+                                    <th>Color</th>
+                                    <th>Talla</th>
+                                    <th>Calidad</th>
+                                    <th>Disponibilidad</th>
+                                    <th>Precio sugerido</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </section>
+
+            </section>
+
+        </main>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/menu-rol.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/mock-inventario.js"></script> <!-- MOCK: borrar con los datos de prueba -->
+    <script src="js/buscador.js"></script>
+
+</body>
+
+</html>

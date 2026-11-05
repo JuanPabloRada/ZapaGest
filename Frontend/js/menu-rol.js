@@ -14,15 +14,27 @@
         "bodegas.html": ["DUENO", "ADMIN"],
         "calidades.html": ["DUENO"],           // HU-03: el dueño configura las calidades
         "catalogo.html": ["DUENO", "ADMIN"],
-        "usuarios.html": ["DUENO"],          // el backend solo deja listar/crear usuarios al dueño
-        "modelos.html": ["DUENO", "ADMIN", "VENDEDOR"],
+        "modelos.html": ["DUENO", "ADMIN"],               // lista y edición de modelos
+        "inventario.html": ["DUENO", "ADMIN"],            // HU-07: ingreso de mercancía
+        "buscador.html": ["DUENO", "ADMIN", "VENDEDOR"],  // HU-09 y HU-10: buscador
+        "usuarios.html": ["DUENO"],            // el backend solo deja listar/crear usuarios al dueño
     };
 
     document.addEventListener("DOMContentLoaded", function () {
         if (typeof obtenerUsuarioSesion !== "function") return; // api.js no está cargado
 
+        // Sin sesión: vuelve al login (api.js se encarga de la redirección)
+        if (typeof requerirSesion === "function" && !requerirSesion()) return;
+
         const usuario = obtenerUsuarioSesion();
         if (!usuario) return;
+
+        // Si el rol no puede ver esta página, lo devuelve al dashboard.
+        // El dashboard se excluye a propósito para evitar un bucle de redirecciones.
+        const pagina = location.pathname.split("/").pop() || "dashboard.html";
+        const permitidosAqui = MENU_POR_ROL[pagina];
+        if (pagina !== "dashboard.html" && permitidosAqui && typeof requerirRol === "function"
+            && !requerirRol(...permitidosAqui)) return;
 
         // Oculta del menú lo que el rol no puede usar
         document.querySelectorAll(".menu-item").forEach(function (enlace) {
@@ -40,5 +52,9 @@
             .forEach(function (el) { el.textContent = etiqueta; });
         document.querySelectorAll(".dropdown-perfil span")
             .forEach(function (el) { el.textContent = usuario.username || ""; });
+
+        // Saludo del dashboard: <h1>¡Hola, <span id="nombreUsuario"></span>!</h1>
+        const saludo = document.getElementById("nombreUsuario");
+        if (saludo) saludo.textContent = usuario.nombre || usuario.username;
     });
 })();

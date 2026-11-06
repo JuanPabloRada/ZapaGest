@@ -99,7 +99,11 @@ function limpiarDependientes() {
 function actualizarPrecio() {
     const precio = precioElegido();
     precioHint.hidden = !precio;
-    if (precio) precioHint.textContent = `Precio sugerido que heredará la variante: ${dinero(precio.precioSugerido)}`;
+    if (precio) {
+        precioHint.textContent = precio.precioSugerido != null
+            ? `Precio sugerido que heredará la variante: ${dinero(precio.precioSugerido)}`
+            : "Esta calidad no tiene precios configurados: la variante se creará sin precios.";
+    }
 }
 
 selReferencia.addEventListener("change", () => {

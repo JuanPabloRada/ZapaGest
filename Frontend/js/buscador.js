@@ -55,9 +55,8 @@ function llenarFiltro(select, nombres, textoInicial) {
 function textoDisponibilidad(v) {
     if (v.total <= 0) return "<strong>Agotado</strong>";
     const conStock = v.ubicaciones.filter(u => u.cantidad > 0);
-    const donde = conStock.length === 1
-        ? escapar(conStock[0].ubicacion)
-        : conStock.map(u => `${escapar(u.ubicacion)} (${u.cantidad})`).join(", ");
+    // Desglose por ubicación: siempre con la cantidad de cada una
+    const donde = conStock.map(u => `${escapar(u.ubicacion)}: ${u.cantidad}`).join(" · ");
     return `<strong>Sí hay ${v.total} ${v.total === 1 ? "par" : "pares"}</strong><br><small>${donde}</small>`;
 }
 
@@ -69,7 +68,7 @@ function dibujarResultados(lista) {
         <td>${escapar(v.talla)}</td>
         <td>${escapar(v.calidad)}</td>
         <td class="disponibilidad">${textoDisponibilidad(v)}</td>
-        <td>${dinero(v.precioSugerido)}</td>
+        <td>${v.precioSugerido == null ? "<small>Sin precio</small>" : dinero(v.precioSugerido)}</td>
     </tr>`).join("");
 }
 

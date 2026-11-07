@@ -57,6 +57,7 @@ import com.zapgest.backend.controllers.UsuarioController;
 import com.zapgest.backend.exceptions.CredencialesInvalidasException;
 import com.zapgest.backend.exceptions.ManejadorErrores;
 import com.zapgest.backend.models.Calidad;
+import com.zapgest.backend.dto.UsuarioResponse;
 import com.zapgest.backend.models.Rol;
 import com.zapgest.backend.models.Ubicacion;
 import com.zapgest.backend.models.Usuario;
@@ -116,6 +117,11 @@ class PermisosApiTest {
         public String editar() {
             return "ok";
         }
+
+        @GetMapping("/{id}/opciones")
+        public String opciones() {
+            return "ok";
+        }
     }
 
     @Autowired
@@ -150,6 +156,8 @@ class PermisosApiTest {
         when(ubicacionService.cambiarEstado(anyLong(), any())).thenReturn(new Ubicacion());
         when(calidadService.editar(anyLong(), any())).thenReturn(new Calidad());
         when(ubicacionService.editar(anyLong(), any())).thenReturn(new Ubicacion());
+        when(usuarioService.cambiarEstado(anyLong(), any(), any()))
+                .thenReturn(new UsuarioResponse(5L, "Sandra", "sandra", Rol.VENDEDOR, false));
     }
 
     // ---------- helpers ----------
@@ -525,5 +533,38 @@ class PermisosApiTest {
         org.junit.jupiter.api.Assertions.assertEquals(
                 "{\"mensaje\":\"" + MSG_403 + "\"}",
                 new String(cuerpo, java.nio.charset.StandardCharsets.UTF_8));
+    }
+
+    // ---------- Sprint 2: activar/desactivar usuarios y opciones por referencia ----------
+
+    private int patchUsuario(String token) throws Exception {
+        return mvc.perform(patch("/api/usuarios/5").header("Authorization", token)
+                .contentType(MediaType.APPLICATION_JSON).content("{\"activo\":false}"))
+                .andReturn().getResponse().getStatus();
+    }
+
+    @Test
+    void activarODesactivarUsuariosEsSoloDelDueno() throws Exception {
+        org.assertj.core.api.Assertions.assertThat(mvc.perform(patch("/api/usuarios/5")
+                .contentType(MediaType.APPLICATION_JSON).content("{\"activo\":false}"))
+                .andReturn().getResponse().getStatus()).isEqualTo(401);
+        org.assertj.core.api.Assertions.assertThat(patchUsuario(bearer("vendedor1", Rol.VENDEDOR))).isEqualTo(403);
+        org.assertj.core.api.Assertions.assertThat(patchUsuario(bearer("admin1", Rol.ADMIN))).isEqualTo(403);
+        org.assertj.core.api.Assertions.assertThat(patchUsuario(bearer("dueno", Rol.DUENO))).isEqualTo(200);
+    }
+
+    @Test
+    void opcionesDeReferenciaSonDeDuenoYAdmin() throws Exception {
+        String ruta = "/api/catalogo/1/opciones";
+        org.assertj.core.api.Assertions.assertThat(mvc.perform(get(ruta)).andReturn().getResponse().getStatus()).isEqualTo(401);
+        org.assertj.core.api.Assertions.assertThat(mvc.perform(get(ruta).header("Authorization", bearer("vendedor1", Rol.VENDEDOR)))
+                .andReturn().getResponse().getStatus()).isEqualTo(403);
+        org.assertj.core.api.Assertions.assertThat(mvc.perform(get(ruta).header("Authorization", bearer("admin1", Rol.ADMIN)))
+                .andReturn().getResponse().getStatus()).isEqualTo(200);
+        org.assertj.core.api.Assertions.assertThat(mvc.perform(get(ruta).header("Authorization", bearer("dueno", Rol.DUENO)))
+                .andReturn().getResponse().getStatus()).isEqualTo(200);
+        // El listado general del catalogo lo sigue viendo cualquiera con sesion
+        org.assertj.core.api.Assertions.assertThat(mvc.perform(get("/api/catalogo").header("Authorization", bearer("vendedor1", Rol.VENDEDOR)))
+                .andReturn().getResponse().getStatus()).isEqualTo(200);
     }
 }

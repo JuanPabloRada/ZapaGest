@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.zapgest.backend.dto.catalogo.CatalogoRequest;
 import com.zapgest.backend.dto.catalogo.CatalogoResponse;
 import com.zapgest.backend.dto.catalogo.OpcionResponse;
+import com.zapgest.backend.dto.catalogo.OpcionesReferenciaResponse;
 import com.zapgest.backend.dto.catalogo.PrecioRequest;
 import com.zapgest.backend.exceptions.RecursoNoEncontradoException;
 import com.zapgest.backend.exceptions.ReferenciaDuplicadaException;
@@ -48,6 +49,31 @@ public class CatalogoService {
         this.colorRepository = colorRepository;
         this.tallaRepository = tallaRepository;
         this.calidadRepository = calidadRepository;
+    }
+
+    // HU-07: colores, tallas y calidades de UNA referencia, para la pantalla de ingreso de mercancia.
+    // Sin costos ni precios. Ordenados para que los desplegables salgan en orden.
+    @Transactional(readOnly = true)
+    public OpcionesReferenciaResponse opciones(Long id) {
+        Referencia referencia = referenciaRepository.findByIdAndNegocioId(id, NEGOCIO_ID)
+                .orElseThrow(() -> new RecursoNoEncontradoException("No se encontró la referencia."));
+
+        List<OpcionResponse> colores = referencia.getColores().stream()
+                .sorted(java.util.Comparator.comparing(Color::getNombre, String.CASE_INSENSITIVE_ORDER))
+                .map(c -> new OpcionResponse(c.getId(), c.getNombre()))
+                .toList();
+        List<OpcionResponse> tallas = referencia.getTallas().stream()
+                .sorted(java.util.Comparator.comparing(Talla::getValor))
+                .map(t -> new OpcionResponse(t.getId(), t.comoTexto()))
+                .toList();
+        List<OpcionResponse> calidades = referencia.getPrecios().stream()
+                .map(ReferenciaCalidad::getCalidad)
+                .sorted(java.util.Comparator.comparing(Calidad::getNombre, String.CASE_INSENSITIVE_ORDER))
+                .map(c -> new OpcionResponse(c.getId(), c.getNombre()))
+                .toList();
+
+        return new OpcionesReferenciaResponse(referencia.getId(), referencia.getCodigo(), referencia.getNombre(),
+                referencia.getMarca(), colores, tallas, calidades);
     }
 
     @Transactional(readOnly = true)

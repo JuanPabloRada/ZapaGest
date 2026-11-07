@@ -67,6 +67,7 @@ public class SeguridadConfig {
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/usuarios/**").hasRole("DUENO")
                         .requestMatchers(HttpMethod.POST, "/api/usuarios/**").hasRole("DUENO")
+                        .requestMatchers(HttpMethod.PATCH, "/api/usuarios/**").hasRole("DUENO")
                         .requestMatchers(HttpMethod.GET, "/api/calidades/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/calidades/**").hasRole("DUENO")
                         .requestMatchers(HttpMethod.PUT, "/api/calidades/**").hasRole("DUENO")
@@ -74,6 +75,8 @@ public class SeguridadConfig {
                         .requestMatchers(HttpMethod.POST, "/api/ubicaciones/**").hasAnyRole("DUENO", "ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/api/ubicaciones/**").hasAnyRole("DUENO", "ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/ubicaciones/**").hasAnyRole("DUENO", "ADMIN")
+                        // Opciones para el ingreso de mercancia (HU-07): solo quien ingresa mercancia
+                        .requestMatchers(HttpMethod.GET, "/api/catalogo/*/opciones").hasAnyRole("DUENO", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/catalogo/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/catalogo/**").hasAnyRole("DUENO", "ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/catalogo/**").hasAnyRole("DUENO", "ADMIN")

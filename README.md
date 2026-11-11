@@ -28,6 +28,8 @@ El login devuelve un JWT con una expiración de ocho horas. El cliente web lo ma
 - `GET` y `POST /api/catalogo` ya existen en el backend. El formulario envía `referencia`, `nombre`, `marca`, `categoria`, `colores`, `tallas` y `precios` (`calidadId`, `costo`, `precioMinimo`, `precioSugerido`); el precio de venta de la pantalla se envía como `precioSugerido`. Las tallas válidas son las europeas de 34 a 46 (de 0.5 en 0.5).
 - `POST /api/calidades` solo toma el `nombre` (se recortan espacios, máximo 50 caracteres, no se permiten repetidos sin distinguir mayúsculas). Cualquier `id`, `negocioId` o `activa` enviado se ignora.
 - Al arrancar, el backend crea las tallas europeas (34 a 46) en la tabla `talla` si faltan; no hace falta cargarlas a mano.
+- `GET /api/inventario/buscar?q=&color=&talla=&calidad=&incluirAgotados=&pagina=&tamano=` (HU-09/HU-10) requiere login; lo pueden usar `DUENO`, `ADMIN` y `VENDEDOR`. Todos los parametros son opcionales: `q` busca por codigo, nombre o marca; `color`, `talla` y `calidad` son ids (los mismos de `GET /api/catalogo/{id}/opciones`). Sin parametros devuelve las variantes con stock; con `incluirAgotados=true` tambien las de 0. `pagina` empieza en 0 y `tamano` es 50 por defecto (maximo 100). Responde una lista de `{ varianteId, referencia, modelo, color, talla, calidad, precioSugerido, total, ubicaciones: [{ ubicacionId, ubicacion, cantidad }] }`; `precioSugerido` es `null` si la variante no tiene precio y la respuesta nunca incluye costo de adquisicion ni precio minimo. El total de resultados (sin paginar) va en el header `X-Total-Count`.
+- Para el ingreso de mercancia (HU-07), `InventarioService.sumarStock(varianteId, ubicacionId, cantidad)` suma stock de forma atomica (`INSERT ... ON CONFLICT`) y devuelve lo que queda en esa ubicacion; `MovimientoService.registrarEntrada(variante, ubicacion, cantidad, usuario)` guarda el movimiento `ENTRADA`. Ambos se llaman dentro de la transaccion del ingreso.
 
 
 ## Base de datos y primer arranque
@@ -55,6 +57,9 @@ Pruebas automáticas (no necesitan PostgreSQL ni variables de entorno):
 - `PermisosApiTest`: autenticación y permisos reales (`SeguridadConfig` + filtro JWT) con los controladores: 401 sin token/token inválido/expirado/usuario inactivo, 403 por rol, forma del login y CORS.
 - `CalidadServiceTest`, `CatalogoServiceTest` y `SembradoTallasTest`: reglas de calidades, de registro de referencias (HU-05) y siembra de tallas.
 - `JwtServiceTest`: emisión y lectura del token.
+- `InventarioServiceTest`, `MovimientoServiceTest` y `ConsultaInventarioServiceTest`: reglas de HU-07 (suma de stock, cantidad invalida, ubicacion inactiva), movimiento de entrada, y busqueda/total/desglose por ubicacion de HU-09 y HU-10 (sin costos, `precioSugerido` nulo).
+- `ConsultaInventarioApiTest`: `GET /api/inventario/buscar` con la seguridad real: 401 sin token, 200 para los tres roles, sin campos de costo y con `X-Total-Count` legible por el navegador (CORS).
+- `InventarioConcurrenciaTest`: 20 ingresos simultaneos de la misma variante en la misma ubicacion no pierden unidades ni duplican la fila. Necesita PostgreSQL; solo corre si `JWT_SECRET` esta definida (crea y borra datos `zz-conc-*`).
 - `BackendApplicationTests`: arranque completo; solo se ejecuta si `JWT_SECRET` está definida y hay PostgreSQL.
 
 Verificación contra el backend en ejecución (con la base de datos real). Usa la misma `DUENO_PASSWORD` con la que arrancaste:

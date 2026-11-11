@@ -39,6 +39,8 @@ public class SeguridadConfig {
                 .toList());
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
+        // El navegador solo deja leer a JavaScript los headers que se exponen aqui (total de la busqueda, HU-09)
+        configuration.setExposedHeaders(Arrays.asList("X-Total-Count"));
         configuration.setAllowCredentials(false);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -75,6 +77,8 @@ public class SeguridadConfig {
                         .requestMatchers(HttpMethod.POST, "/api/ubicaciones/**").hasAnyRole("DUENO", "ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/api/ubicaciones/**").hasAnyRole("DUENO", "ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/ubicaciones/**").hasAnyRole("DUENO", "ADMIN")
+                        // Consulta de disponibilidad y ubicacion (HU-09/HU-10): cualquier usuario con login
+                        .requestMatchers(HttpMethod.GET, "/api/inventario/buscar").authenticated()
                         // Opciones para el ingreso de mercancia (HU-07): solo quien ingresa mercancia
                         .requestMatchers(HttpMethod.GET, "/api/catalogo/*/opciones").hasAnyRole("DUENO", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/catalogo/**").authenticated()

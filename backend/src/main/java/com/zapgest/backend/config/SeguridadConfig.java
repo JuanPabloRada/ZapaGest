@@ -81,9 +81,9 @@ public class SeguridadConfig {
                         .requestMatchers(HttpMethod.GET, "/api/inventario/buscar").authenticated()
                         // HU-07: ingresar mercancia es de quien maneja el inventario
                         .requestMatchers(HttpMethod.POST, "/api/inventario/ingresos").hasAnyRole("DUENO", "ADMIN")
-                        // Opciones para el ingreso de mercancia (HU-07): solo quien ingresa mercancia
-                        .requestMatchers(HttpMethod.GET, "/api/catalogo/*/opciones").hasAnyRole("DUENO", "ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api/catalogo/**").authenticated()
+                        // Catalogo y opciones para el ingreso (HU-05/HU-07): solo DUENO y ADMIN, porque
+                        // trae costo y precio minimo. El vendedor usa /colores, /tallas, /calidades y /inventario/buscar.
+                        .requestMatchers(HttpMethod.GET, "/api/catalogo/**").hasAnyRole("DUENO", "ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/catalogo/**").hasAnyRole("DUENO", "ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/catalogo/**").hasAnyRole("DUENO", "ADMIN")
                         .anyRequest().authenticated())

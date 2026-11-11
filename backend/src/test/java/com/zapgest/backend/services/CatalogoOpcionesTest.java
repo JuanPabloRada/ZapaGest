@@ -27,6 +27,7 @@ import com.zapgest.backend.repositories.CalidadRepository;
 import com.zapgest.backend.repositories.ColorRepository;
 import com.zapgest.backend.repositories.ReferenciaRepository;
 import com.zapgest.backend.repositories.TallaRepository;
+import com.zapgest.backend.repositories.VarianteRepository;
 
 // HU-07: GET /api/catalogo/{id}/opciones -> colores, tallas y calidades de una referencia, sin costos.
 @ExtendWith(MockitoExtension.class)
@@ -41,13 +42,16 @@ class CatalogoOpcionesTest {
     private TallaRepository tallaRepository;
     @Mock
     private CalidadRepository calidadRepository;
+    @Mock
+    private VarianteRepository varianteRepository;
 
     private CatalogoService service;
     private Referencia referencia;
 
     @BeforeEach
     void preparar() {
-        service = new CatalogoService(referenciaRepository, colorRepository, tallaRepository, calidadRepository);
+        service = new CatalogoService(referenciaRepository, colorRepository, tallaRepository, calidadRepository,
+                varianteRepository);
 
         referencia = new Referencia();
         referencia.setId(1L);

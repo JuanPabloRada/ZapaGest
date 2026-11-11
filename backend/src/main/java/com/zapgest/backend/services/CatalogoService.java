@@ -29,7 +29,9 @@ import com.zapgest.backend.models.Talla;
 import com.zapgest.backend.repositories.CalidadRepository;
 import com.zapgest.backend.repositories.ColorRepository;
 import com.zapgest.backend.repositories.ReferenciaRepository;
+import com.zapgest.backend.repositories.StockPorOpcion;
 import com.zapgest.backend.repositories.TallaRepository;
+import com.zapgest.backend.repositories.VarianteRepository;
 
 // HU-05: registrar referencias con sus colores, tallas y precios por calidad.
 // Importante: guardar una referencia NO crea stock ni combinaciones color x talla x calidad.
@@ -42,13 +44,16 @@ public class CatalogoService {
     private final ColorRepository colorRepository;
     private final TallaRepository tallaRepository;
     private final CalidadRepository calidadRepository;
+    private final VarianteRepository varianteRepository;
 
     public CatalogoService(ReferenciaRepository referenciaRepository, ColorRepository colorRepository,
-            TallaRepository tallaRepository, CalidadRepository calidadRepository) {
+            TallaRepository tallaRepository, CalidadRepository calidadRepository,
+            VarianteRepository varianteRepository) {
         this.referenciaRepository = referenciaRepository;
         this.colorRepository = colorRepository;
         this.tallaRepository = tallaRepository;
         this.calidadRepository = calidadRepository;
+        this.varianteRepository = varianteRepository;
     }
 
     // HU-07: colores, tallas y calidades de UNA referencia, para la pantalla de ingreso de mercancia.
@@ -156,8 +161,8 @@ public class CatalogoService {
     // exactamente como llega (datos, colores, tallas y precios por calidad).
     // Decisiones del grupo:
     //  - El codigo SI se puede cambiar, siempre que no lo tenga OTRA referencia (409).
-    //  - Quitar colores, tallas o calidades se permite por ahora, porque el stock aun
-    //    no existe (llega en el Sprint 2). Ver verificarQueSePuedenQuitar().
+    //  - Quitar colores, tallas o calidades se permite SOLO si no tienen pares en inventario
+    //    (Sprint 2). Ver verificarQueSePuedenQuitar().
     @Transactional
     public CatalogoResponse editar(Long id, CatalogoRequest datos) {
         Referencia referencia = referenciaRepository.findByIdAndNegocioId(id, NEGOCIO_ID)
@@ -177,10 +182,11 @@ public class CatalogoService {
         }
 
         // 3. Validar TODO antes de cambiar nada (los colores al final porque crean registros)
+        //    La regla de stock va ANTES de resolver colores, que puede crear colores nuevos.
         Set<Talla> tallas = resolverTallas(datos.tallas());
         List<PrecioConCalidad> precios = validarPrecios(datos.precios());
+        verificarQueSePuedenQuitar(referencia, datos.colores(), tallas, precios);
         Set<Color> colores = resolverColores(datos.colores());
-        verificarQueSePuedenQuitar(referencia, colores, tallas, precios);
 
         // 4. Datos basicos, colores y tallas
         referencia.setCodigo(codigo);
@@ -212,12 +218,63 @@ public class CatalogoService {
         return CatalogoResponse.desde(referenciaRepository.saveAndFlush(referencia));
     }
 
-    // Punto preparado para el Sprint 2: cuando exista el inventario, aqui se debe
-    // RECHAZAR (con un mensaje claro) quitar un color, una talla o una calidad que
-    // ya tenga stock. Hoy no hay stock, asi que no hay nada que bloquear.
-    private void verificarQueSePuedenQuitar(Referencia referencia, Set<Color> colores,
+    // Sprint 2: no se puede quitar de una referencia un color, una talla o una calidad
+    // que todavia tiene pares en inventario (quedarian "huerfanos"). Con stock en cero si se puede.
+    // Solo consulta el inventario si de verdad se esta quitando algo.
+    private void verificarQueSePuedenQuitar(Referencia referencia, List<String> nombresColores,
             Set<Talla> tallas, List<PrecioConCalidad> precios) {
-        // Sin inventario todavia (HU-06 / HU-07, Sprint 2).
+        Set<String> coloresPedidos = new HashSet<>();
+        for (String n : nombresColores) {
+            if (n != null) {
+                coloresPedidos.add(n.trim().replaceAll("\\s+", " ").toLowerCase());
+            }
+        }
+        List<Color> coloresQuitados = referencia.getColores().stream()
+                .filter(c -> c.getId() != null && !coloresPedidos.contains(c.getNombre().toLowerCase()))
+                .toList();
+
+        Set<Long> tallasPedidas = new HashSet<>();
+        tallas.forEach(t -> tallasPedidas.add(t.getId()));
+        List<Talla> tallasQuitadas = referencia.getTallas().stream()
+                .filter(t -> !tallasPedidas.contains(t.getId()))
+                .toList();
+
+        Set<Long> calidadesPedidas = new HashSet<>();
+        precios.forEach(p -> calidadesPedidas.add(p.calidad().getId()));
+        List<Calidad> calidadesQuitadas = referencia.getPrecios().stream()
+                .map(ReferenciaCalidad::getCalidad)
+                .filter(c -> !calidadesPedidas.contains(c.getId()))
+                .toList();
+
+        if (!coloresQuitados.isEmpty()) {
+            Map<Long, Long> stock = aMapa(varianteRepository.stockPorColor(referencia.getId()));
+            for (Color c : coloresQuitados) {
+                rechazarSiHayStock(stock.get(c.getId()), "el color " + c.getNombre());
+            }
+        }
+        if (!tallasQuitadas.isEmpty()) {
+            Map<Long, Long> stock = aMapa(varianteRepository.stockPorTalla(referencia.getId()));
+            for (Talla t : tallasQuitadas) {
+                rechazarSiHayStock(stock.get(t.getId()), "la talla " + t.comoTexto());
+            }
+        }
+        if (!calidadesQuitadas.isEmpty()) {
+            Map<Long, Long> stock = aMapa(varianteRepository.stockPorCalidad(referencia.getId()));
+            for (Calidad c : calidadesQuitadas) {
+                rechazarSiHayStock(stock.get(c.getId()), "la calidad " + c.getNombre());
+            }
+        }
+    }
+
+    private static Map<Long, Long> aMapa(List<StockPorOpcion> filas) {
+        return filas.stream().collect(Collectors.toMap(StockPorOpcion::opcionId, StockPorOpcion::cantidad));
+    }
+
+    private static void rechazarSiHayStock(Long pares, String queSeQuita) {
+        if (pares != null && pares > 0) {
+            throw new IllegalArgumentException("No puedes quitar " + queSeQuita + ": hay " + pares
+                    + (pares == 1 ? " par" : " pares") + " en inventario.");
+        }
     }
 
     private void copiarPrecio(PrecioRequest p, ReferenciaCalidad rc) {

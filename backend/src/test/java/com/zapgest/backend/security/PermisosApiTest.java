@@ -444,8 +444,12 @@ class PermisosApiTest {
     }
 
     @Test
-    void catalogoGetLoPuedeVerCualquierUsuarioConLogin() throws Exception {
+    void catalogoGetEsSoloDeDuenoYAdminPorqueTraeCostos() throws Exception {
         mvc.perform(get("/api/catalogo").header("Authorization", bearer("vendedor1", Rol.VENDEDOR)))
+                .andExpect(status().isForbidden());
+        mvc.perform(get("/api/catalogo").header("Authorization", bearer("admin1", Rol.ADMIN)))
+                .andExpect(status().isOk());
+        mvc.perform(get("/api/catalogo").header("Authorization", bearer("dueno", Rol.DUENO)))
                 .andExpect(status().isOk());
     }
 
@@ -569,9 +573,9 @@ class PermisosApiTest {
                 .andReturn().getResponse().getStatus()).isEqualTo(200);
         org.assertj.core.api.Assertions.assertThat(mvc.perform(get(ruta).header("Authorization", bearer("dueno", Rol.DUENO)))
                 .andReturn().getResponse().getStatus()).isEqualTo(200);
-        // El listado general del catalogo lo sigue viendo cualquiera con sesion
+        // El listado del catalogo tampoco lo ve el vendedor (trae costos)
         org.assertj.core.api.Assertions.assertThat(mvc.perform(get("/api/catalogo").header("Authorization", bearer("vendedor1", Rol.VENDEDOR)))
-                .andReturn().getResponse().getStatus()).isEqualTo(200);
+                .andReturn().getResponse().getStatus()).isEqualTo(403);
     }
 
     // ---------- HU-07: ingreso de mercancia ----------

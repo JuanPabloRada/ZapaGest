@@ -57,7 +57,10 @@ import com.zapgest.backend.controllers.UsuarioController;
 import com.zapgest.backend.exceptions.CredencialesInvalidasException;
 import com.zapgest.backend.exceptions.ManejadorErrores;
 import com.zapgest.backend.models.Calidad;
+import com.zapgest.backend.controllers.IngresoMercanciaController;
 import com.zapgest.backend.dto.UsuarioResponse;
+import com.zapgest.backend.dto.inventario.IngresoResponse;
+import com.zapgest.backend.services.IngresoMercanciaService;
 import com.zapgest.backend.models.Rol;
 import com.zapgest.backend.models.Ubicacion;
 import com.zapgest.backend.models.Usuario;
@@ -93,7 +96,7 @@ class PermisosApiTest {
     @EnableWebSecurity
     @Import({ SeguridadConfig.class, JwtService.class, JwtAuthenticationFilter.class,
             RestAuthenticationEntryPoint.class, RestAccessDeniedHandler.class, ManejadorErrores.class,
-            AuthController.class, UsuarioController.class, CalidadController.class, UbicacionController.class,
+            AuthController.class, UsuarioController.class, IngresoMercanciaController.class, CalidadController.class, UbicacionController.class,
             PermisosApiTest.CatalogoFalso.class })
     static class Contexto {
     }
@@ -140,12 +143,14 @@ class PermisosApiTest {
     private CalidadService calidadService;
     @MockitoBean
     private UbicacionService ubicacionService;
+    @MockitoBean
+    private IngresoMercanciaService ingresoMercanciaService;
 
     private MockMvc mvc;
 
     @BeforeEach
     void preparar() {
-        reset(usuarioRepository, usuarioService, calidadService, ubicacionService);
+        reset(usuarioRepository, usuarioService, calidadService, ubicacionService, ingresoMercanciaService);
         mvc = MockMvcBuilders.webAppContextSetup(contexto).addFilters(cadenaSeguridad).build();
 
         when(usuarioService.listar()).thenReturn(List.of());
@@ -158,6 +163,7 @@ class PermisosApiTest {
         when(ubicacionService.editar(anyLong(), any())).thenReturn(new Ubicacion());
         when(usuarioService.cambiarEstado(anyLong(), any(), any()))
                 .thenReturn(new UsuarioResponse(5L, "Sandra", "sandra", Rol.VENDEDOR, false));
+        when(ingresoMercanciaService.ingresar(any(), any())).thenReturn(new IngresoResponse(50L, 12));
     }
 
     // ---------- helpers ----------
@@ -566,5 +572,36 @@ class PermisosApiTest {
         // El listado general del catalogo lo sigue viendo cualquiera con sesion
         org.assertj.core.api.Assertions.assertThat(mvc.perform(get("/api/catalogo").header("Authorization", bearer("vendedor1", Rol.VENDEDOR)))
                 .andReturn().getResponse().getStatus()).isEqualTo(200);
+    }
+
+    // ---------- HU-07: ingreso de mercancia ----------
+
+    private static final String CUERPO_INGRESO =
+            "{\"ubicacionId\":2,\"referenciaId\":1,\"colorId\":10,\"tallaId\":20,\"calidadId\":30,\"cantidad\":12}";
+
+    private int postIngreso(String token) throws Exception {
+        var peticion = post("/api/inventario/ingresos").contentType(MediaType.APPLICATION_JSON).content(CUERPO_INGRESO);
+        if (token != null) {
+            peticion = peticion.header("Authorization", token);
+        }
+        return mvc.perform(peticion).andReturn().getResponse().getStatus();
+    }
+
+    @Test
+    void ingresarMercanciaEsDeDuenoYAdmin() throws Exception {
+        org.assertj.core.api.Assertions.assertThat(postIngreso(null)).isEqualTo(401);
+        org.assertj.core.api.Assertions.assertThat(postIngreso(bearer("vendedor1", Rol.VENDEDOR))).isEqualTo(403);
+        org.assertj.core.api.Assertions.assertThat(postIngreso(bearer("admin1", Rol.ADMIN))).isEqualTo(201);
+        org.assertj.core.api.Assertions.assertThat(postIngreso(bearer("dueno", Rol.DUENO))).isEqualTo(201);
+    }
+
+    @Test
+    void elIngresoRespondeVarianteYStockConQuienLoHizo() throws Exception {
+        mvc.perform(post("/api/inventario/ingresos").header("Authorization", bearer("admin1", Rol.ADMIN))
+                .contentType(MediaType.APPLICATION_JSON).content(CUERPO_INGRESO))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.varianteId").value(50))
+                .andExpect(jsonPath("$.stockEnUbicacion").value(12));
+        org.mockito.Mockito.verify(ingresoMercanciaService).ingresar(any(), org.mockito.ArgumentMatchers.eq("admin1"));
     }
 }

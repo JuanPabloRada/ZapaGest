@@ -79,6 +79,8 @@ public class SeguridadConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/ubicaciones/**").hasAnyRole("DUENO", "ADMIN")
                         // Consulta de disponibilidad y ubicacion (HU-09/HU-10): cualquier usuario con login
                         .requestMatchers(HttpMethod.GET, "/api/inventario/buscar").authenticated()
+                        // HU-07: ingresar mercancia es de quien maneja el inventario
+                        .requestMatchers(HttpMethod.POST, "/api/inventario/ingresos").hasAnyRole("DUENO", "ADMIN")
                         // Opciones para el ingreso de mercancia (HU-07): solo quien ingresa mercancia
                         .requestMatchers(HttpMethod.GET, "/api/catalogo/*/opciones").hasAnyRole("DUENO", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/catalogo/**").authenticated()

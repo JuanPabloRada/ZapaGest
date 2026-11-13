@@ -70,8 +70,13 @@
         <main class="contenido">
 
             <header class="topbar">
-                <div class="buscador">
-                    <input type="text" id="searchInput" placeholder="Buscar...">
+
+                <div class="topbar-izq">
+                    <button type="button" id="menuToggle" class="menu-toggle" aria-label="Mostrar u ocultar menú"
+                        aria-expanded="true">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <img src="img/logo principal 2.png" class="topbar-logo" alt="ZapaGest">
                 </div>
 
                 <div class="usuario-menu">
@@ -92,12 +97,15 @@
                                 <small class="rol"></small>
                             </div>
                         </div>
+
                         <hr>
+
                         <button id="logoutButton" class="dropdown-item logout">
                             <i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión
                         </button>
                     </div>
                 </div>
+
             </header>
 
             <section class="dashboard">

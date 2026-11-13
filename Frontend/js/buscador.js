@@ -1,8 +1,5 @@
 // El buscador lo usan todos los roles (HU-09 y HU-10): no pide requerirRol, solo sesión (menu-rol.js).
 
-// MOCK: pasa a true cuando exista GET /api/inventario/buscar.
-const USAR_API_INVENTARIO = false;
-
 // ===== ELEMENTOS DEL HTML =====
 const inputBusqueda = document.getElementById("q");
 const filtroColor = document.getElementById("filtroColor");
@@ -18,10 +15,10 @@ let temporizador = null;
 let numeroBusqueda = 0; // para ignorar respuestas viejas
 
 // ===== ACCESO A DATOS =====
-// Respuesta esperada (sin costos): [{ referencia, modelo, color, talla, calidad,
+// GET /api/inventario/buscar (los tres roles). Sin parámetros devuelve solo lo que tiene stock, hasta 100 por página.
+// Respuesta (sin costos): [{ referencia, modelo, color, talla, calidad,
 //   precioSugerido, total, ubicaciones: [{ ubicacion, cantidad }] }]
 function buscarVariantes(filtros) {
-    if (!USAR_API_INVENTARIO) return mockInventario.buscar(filtros);
     const parametros = new URLSearchParams();
     for (const [clave, valor] of Object.entries(filtros)) {
         if (valor) parametros.set(clave, valor);
@@ -98,7 +95,7 @@ async function buscar() {
                 : "Aún no hay mercancía registrada. Se carga en Inventario.";
         } else {
             estado.textContent = `${lista.length} resultado${lista.length === 1 ? "" : "s"} en ${ms} ms` +
-                (lista.length > MAX_FILAS ? ` · mostrando los primeros ${MAX_FILAS}; usa la búsqueda para afinar` : "");
+                (lista.length >= MAX_FILAS ? ` · puede haber más; usa la búsqueda o los filtros para afinar` : "");
         }
     } catch (error) {
         if (mia !== numeroBusqueda) return;

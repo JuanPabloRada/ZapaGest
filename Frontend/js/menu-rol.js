@@ -23,6 +23,10 @@
     document.addEventListener("DOMContentLoaded", function () {
         if (typeof obtenerUsuarioSesion !== "function") return; // api.js no está cargado
 
+        // En el login no hay sesión que exigir: evita un bucle de recargas si este script se incluye allí por error
+        const paginaActual = location.pathname.split("/").pop();
+        if (paginaActual === "login.html" || paginaActual === "index.html") return;
+
         // Sin sesión: vuelve al login (api.js se encarga de la redirección)
         if (typeof requerirSesion === "function" && !requerirSesion()) return;
 

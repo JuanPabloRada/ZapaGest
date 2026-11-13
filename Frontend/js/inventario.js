@@ -1,11 +1,14 @@
 // ===== PERMISOS =====
-// Solo dueño y administrador ingresan mercancía (HU-07).
+// Solo dueño y administrador ingresan mercancía (HU-07). El vendedor recibe 403.
 const tienePermiso = requerirRol("DUENO", "ADMIN");
 if (!tienePermiso) document.querySelector(".dashboard").hidden = true;
 
-// MOCK: pasa a true cuando existan POST y GET /api/inventario/ingresos.
-// (Bodegas y catálogo ya usan la API real.)
-const USAR_API_INVENTARIO = false;
+// ===== CONFIGURACIÓN =====
+const MAX_PARES = 10000; // decisión del Product Owner: máximo por ingreso (evita un cero de más)
+
+// El listado de últimos ingresos depende de que Juan Pablo confirme su GET (ruta y campos).
+// Mientras tanto la tabla se oculta; cuando exista, pasa a true.
+const MOSTRAR_ULTIMOS_INGRESOS = false;
 
 // ===== ELEMENTOS DEL HTML =====
 const form = document.getElementById("ingresoForm");
@@ -24,27 +27,31 @@ const textoVacio = document.getElementById("vacio");
 
 let bodegas = [];
 let modelos = [];
+let pedidoOpciones = 0; // para ignorar respuestas viejas al cambiar de referencia
 
-// ===== ACCESO A DATOS =====
+// ===== ACCESO A DATOS (API) =====
 
 function obtenerBodegas() {
     return apiFetch("/ubicaciones");
 }
 
+// Trae costos: solo dueño y administrador pueden llamarlo (el vendedor recibe 403)
 function obtenerModelos() {
     return apiFetch("/catalogo");
 }
 
-// datos = { ubicacionId, referenciaId, color, talla, calidadId, cantidad }
-// La respuesta esperada incluye { stockEnUbicacion }. "info" solo la usa el mock.
-function registrarIngreso(datos, info) {
-    if (!USAR_API_INVENTARIO) return mockInventario.registrarIngreso(datos, info);
+// { referenciaId, codigo, nombre, marca, colores: [{id, nombre}], tallas: [{id, nombre}], calidades: [{id, nombre}] }
+function obtenerOpciones(referenciaId) {
+    return apiFetch(`/catalogo/${referenciaId}/opciones`);
+}
+
+// datos = { ubicacionId, referenciaId, colorId, tallaId, calidadId, cantidad } → 201 { varianteId, stockEnUbicacion }
+function registrarIngreso(datos) {
     return apiFetch("/inventario/ingresos", { method: "POST", body: JSON.stringify(datos) });
 }
 
-// Cada ingreso: { fecha, referencia, color, talla, calidad, ubicacion, cantidad, usuario }
+// Ruta y campos por confirmar con Juan Pablo
 function obtenerIngresos() {
-    if (!USAR_API_INVENTARIO) return mockInventario.ingresos();
     return apiFetch("/inventario/ingresos");
 }
 
@@ -69,6 +76,10 @@ function dinero(numero) {
     return "$" + Number(numero).toLocaleString("es-CO");
 }
 
+function textoElegido(select) {
+    return select.selectedOptions[0]?.text ?? "";
+}
+
 // opciones: [{ valor, texto }]
 function llenarSelect(select, opciones, textoInicial) {
     select.innerHTML =
@@ -83,19 +94,20 @@ function modeloElegido() {
     return modelos.find(m => String(m.id) === selReferencia.value);
 }
 
+// El precio se lee del catálogo (las opciones no traen precios ni costos)
 function precioElegido() {
-    const m = modeloElegido();
-    return m ? m.precios.find(p => String(p.calidadId) === selCalidad.value) : null;
+    const modelo = modeloElegido();
+    return modelo ? modelo.precios.find(p => String(p.calidadId) === selCalidad.value) : null;
 }
 
-function limpiarDependientes() {
-    llenarSelect(selColor, [], "Elige primero la referencia");
-    llenarSelect(selTalla, [], "Elige primero la referencia");
-    llenarSelect(selCalidad, [], "Elige primero la referencia");
+function limpiarDependientes(texto = "Elige primero la referencia") {
+    llenarSelect(selColor, [], texto);
+    llenarSelect(selTalla, [], texto);
+    llenarSelect(selCalidad, [], texto);
     actualizarPrecio();
 }
 
-// Muestra el precio que heredará la variante (viene de la referencia)
+// Muestra el precio que heredará la variante
 function actualizarPrecio() {
     const precio = precioElegido();
     precioHint.hidden = !precio;
@@ -106,18 +118,32 @@ function actualizarPrecio() {
     }
 }
 
-selReferencia.addEventListener("change", () => {
-    const m = modeloElegido();
-    if (!m) {
+selReferencia.addEventListener("change", async () => {
+    const modelo = modeloElegido();
+    if (!modelo) {
         limpiarDependientes();
         return;
     }
-    llenarSelect(selColor, m.colores.map(c => ({ valor: c, texto: c })), "Elige un color");
-    llenarSelect(selTalla, m.tallas.map(t => ({ valor: t, texto: t })), "Elige una talla");
-    llenarSelect(selCalidad,
-        m.precios.map(p => ({ valor: p.calidadId, texto: p.calidad ?? `Calidad ${p.calidadId}` })),
-        "Elige una calidad");
-    actualizarPrecio();
+
+    const pedido = ++pedidoOpciones;
+    limpiarDependientes("Cargando...");
+    mostrarMensaje("", "");
+
+    try {
+        const opciones = await obtenerOpciones(modelo.id);
+        if (pedido !== pedidoOpciones) return; // el usuario ya eligió otra referencia
+
+        llenarSelect(selColor, opciones.colores.map(c => ({ valor: c.id, texto: c.nombre })),
+            opciones.colores.length ? "Elige un color" : "Sin colores");
+        llenarSelect(selTalla, opciones.tallas.map(t => ({ valor: t.id, texto: t.nombre })),
+            opciones.tallas.length ? "Elige una talla" : "Sin tallas");
+        llenarSelect(selCalidad, opciones.calidades.map(c => ({ valor: c.id, texto: c.nombre })),
+            opciones.calidades.length ? "Elige una calidad" : "Sin calidades");
+    } catch (error) {
+        if (pedido !== pedidoOpciones) return;
+        limpiarDependientes();
+        mostrarMensaje(textoError(error), "error");
+    }
 });
 
 selCalidad.addEventListener("change", actualizarPrecio);
@@ -127,58 +153,48 @@ form.addEventListener("submit", async event => {
 
     const bodega = bodegas.find(b => String(b.id) === selBodega.value);
     const modelo = modeloElegido();
-    const precio = precioElegido();
     const cantidad = Number(inputCantidad.value);
 
     if (!bodega) return mostrarMensaje("Elige la bodega donde entra la mercancía.", "error");
     if (!modelo) return mostrarMensaje("Elige la referencia.", "error");
     if (!selColor.value) return mostrarMensaje("Elige el color.", "error");
     if (!selTalla.value) return mostrarMensaje("Elige la talla.", "error");
-    if (!precio) return mostrarMensaje("Elige la calidad.", "error");
-    if (!Number.isInteger(cantidad) || cantidad <= 0) {
+    if (!selCalidad.value) return mostrarMensaje("Elige la calidad.", "error");
+    if (!Number.isInteger(cantidad) || cantidad < 1 || cantidad > MAX_PARES) {
         inputCantidad.focus();
-        return mostrarMensaje("La cantidad debe ser un número entero mayor que 0.", "error");
+        return mostrarMensaje(`La cantidad debe ser un número entero entre 1 y ${MAX_PARES.toLocaleString("es-CO")} pares.`, "error");
     }
 
     const datos = {
         ubicacionId: bodega.id,
         referenciaId: modelo.id,
-        color: selColor.value,
-        talla: selTalla.value,
-        calidadId: precio.calidadId,
+        colorId: Number(selColor.value),
+        tallaId: Number(selTalla.value),
+        calidadId: Number(selCalidad.value),
         cantidad,
     };
-    const info = {
-        referencia: modelo.referencia,
-        modelo: modelo.nombre,
-        calidad: precio.calidad ?? `Calidad ${precio.calidadId}`,
-        ubicacion: bodega.nombre,
-        precioSugerido: precio.precioSugerido,
-        usuario: obtenerUsuarioSesion()?.nombre,
-    };
+    const descripcion = `${modelo.referencia} · ${textoElegido(selColor)} · ${textoElegido(selTalla)} · ${textoElegido(selCalidad)}`;
 
     botonGuardar.disabled = true; // evita doble clic
     try {
-        const respuesta = await registrarIngreso(datos, info);
-        const total = respuesta?.stockEnUbicacion;
+        const respuesta = await registrarIngreso(datos);
         mostrarMensaje(
-            `Se registraron ${cantidad} pares de ${info.referencia} · ${datos.color} · ${datos.talla} · ${info.calidad} en ${info.ubicacion}.` +
-            (total != null ? ` Ahora hay ${total} en esa bodega.` : ""),
-            "ok");
+            `Se registraron ${cantidad} pares de ${descripcion} en ${bodega.nombre}. ` +
+            `Ahora hay ${respuesta.stockEnUbicacion} en esa bodega.`, "ok");
 
         // Se conservan la bodega y la referencia: quien recibe cajas repite el ingreso
         selColor.value = selTalla.value = selCalidad.value = inputCantidad.value = "";
         actualizarPrecio();
         selColor.focus();
-        await cargarIngresos();
+        if (MOSTRAR_ULTIMOS_INGRESOS) await cargarIngresos();
     } catch (error) {
-        mostrarMensaje(textoError(error), "error");
+        mostrarMensaje(textoError(error), "error"); // 400, 403 y 404 llegan como { mensaje }
     } finally {
         botonGuardar.disabled = false;
     }
 });
 
-// ===== ÚLTIMOS INGRESOS =====
+// ===== ÚLTIMOS INGRESOS (solo si MOSTRAR_ULTIMOS_INGRESOS) =====
 
 function dibujarIngresos(lista) {
     tbody.innerHTML = lista.map(i => `<tr>
@@ -206,21 +222,28 @@ document.addEventListener("DOMContentLoaded", async () => {
     llenarSelect(selBodega, [], "Cargando...");
     llenarSelect(selReferencia, [], "Cargando...");
 
+    if (!MOSTRAR_ULTIMOS_INGRESOS) {
+        document.getElementById("tablaIngresos").closest(".panel").hidden = true;
+    }
+
     // Cada carga es independiente: si una falla, las demás siguen funcionando
-    const [rBodegas, rModelos, rIngresos] =
-        await Promise.allSettled([obtenerBodegas(), obtenerModelos(), obtenerIngresos()]);
+    const [rBodegas, rModelos, rIngresos] = await Promise.allSettled([
+        obtenerBodegas(),
+        obtenerModelos(),
+        MOSTRAR_ULTIMOS_INGRESOS ? obtenerIngresos() : Promise.resolve([]),
+    ]);
 
     if (rBodegas.status === "fulfilled") {
-        bodegas = rBodegas.value.filter(b => b.activa !== false); // solo bodegas activas
+        bodegas = rBodegas.value.filter(b => b.activa !== false); // una bodega inactiva no recibe mercancía
         llenarSelect(selBodega, bodegas.map(b => ({ valor: b.id, texto: b.nombre })),
             bodegas.length ? "Elige la bodega" : "No hay bodegas activas");
     }
     if (rModelos.status === "fulfilled") {
-        modelos = rModelos.value.filter(m => m.activa !== false);
+        modelos = rModelos.value.filter(m => m.activa !== false); // una referencia inactiva no genera variantes
         llenarSelect(selReferencia, modelos.map(m => ({ valor: m.id, texto: `${m.referencia} · ${m.nombre}` })),
             modelos.length ? "Elige la referencia" : "No hay referencias creadas");
     }
-    if (rIngresos.status === "fulfilled") dibujarIngresos(rIngresos.value);
+    if (MOSTRAR_ULTIMOS_INGRESOS && rIngresos.status === "fulfilled") dibujarIngresos(rIngresos.value);
 
     const fallo = [rBodegas, rModelos, rIngresos].find(r => r.status === "rejected");
     if (fallo) mostrarMensaje(textoError(fallo.reason), "error");

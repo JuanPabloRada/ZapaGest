@@ -9,6 +9,12 @@ const estado = document.getElementById("estado");
 const mensaje = document.getElementById("mensaje");
 const tbody = document.querySelector("#tablaResultados tbody");
 
+// El backend (ConsultaInventarioController) recibe color, talla y calidad como IDS (Long) y q como texto.
+// También acepta pagina (desde 0), tamano (máximo 100) e incluirAgotados (por defecto false).
+const FILTRAR_POR_ID = true;
+const PARAMETROS = { q: "q", color: "color", talla: "talla", calidad: "calidad" };
+const TAMANO_PAGINA = 100; // por defecto el backend devuelve 50; pedimos el máximo
+
 const ESPERA_MS = 300;
 const MAX_FILAS = 100; // tope en pantalla; la búsqueda sirve para afinar
 let temporizador = null;
@@ -21,8 +27,11 @@ let numeroBusqueda = 0; // para ignorar respuestas viejas
 function buscarVariantes(filtros) {
     const parametros = new URLSearchParams();
     for (const [clave, valor] of Object.entries(filtros)) {
-        if (valor) parametros.set(clave, valor);
+        if (valor) parametros.set(PARAMETROS[clave], valor);
     }
+    // Con un criterio de búsqueda se incluyen las variantes agotadas: así se ve "Agotado" y no "no existe"
+    if (Object.values(filtros).some(Boolean)) parametros.set("incluirAgotados", "true");
+    parametros.set("tamano", TAMANO_PAGINA);
     return apiFetch(`/inventario/buscar?${parametros}`);
 }
 
@@ -42,10 +51,14 @@ function dinero(numero) {
     return "$" + Number(numero).toLocaleString("es-CO");
 }
 
-function llenarFiltro(select, nombres, textoInicial) {
+// opciones: [{ valor, texto }]
+function llenarFiltro(select, opciones, textoInicial) {
     select.innerHTML = `<option value="">${textoInicial}</option>` +
-        nombres.map(n => `<option value="${escapar(n)}">${escapar(n)}</option>`).join("");
+        opciones.map(o => `<option value="${escapar(String(o.valor))}">${escapar(o.texto)}</option>`).join("");
 }
+
+// Convierte la lista de la API en opciones: el valor es el id o el nombre según FILTRAR_POR_ID
+const aOpciones = lista => lista.map(x => ({ valor: FILTRAR_POR_ID ? x.id : x.nombre, texto: String(x.nombre) }));
 
 // ===== RESULTADOS =====
 
@@ -58,7 +71,7 @@ function textoDisponibilidad(v) {
 }
 
 function dibujarResultados(lista) {
-    tbody.innerHTML = lista.slice(0, MAX_FILAS).map(v => `<tr class="${v.total <= 0 ? "agotado" : ""}">
+    tbody.innerHTML = [...lista].sort((a, b) => (b.total > 0) - (a.total > 0)).slice(0, MAX_FILAS).map(v => `<tr class="${v.total <= 0 ? "agotado" : ""}">
         <td>${escapar(v.referencia)}</td>
         <td>${escapar(v.modelo)}</td>
         <td>${escapar(v.color)}</td>
@@ -133,7 +146,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const [colores, tallas, calidades] = await Promise.allSettled([
         apiFetch("/colores"), apiFetch("/tallas"), apiFetch("/calidades"),
     ]);
-    if (colores.status === "fulfilled") llenarFiltro(filtroColor, colores.value.map(c => c.nombre), "Todos los colores");
-    if (tallas.status === "fulfilled") llenarFiltro(filtroTalla, tallas.value.map(t => String(t.nombre)), "Todas las tallas");
-    if (calidades.status === "fulfilled") llenarFiltro(filtroCalidad, calidades.value.map(c => c.nombre), "Todas las calidades");
+    if (colores.status === "fulfilled") llenarFiltro(filtroColor, aOpciones(colores.value), "Todos los colores");
+    if (tallas.status === "fulfilled") llenarFiltro(filtroTalla, aOpciones(tallas.value), "Todas las tallas");
+    if (calidades.status === "fulfilled") llenarFiltro(filtroCalidad, aOpciones(calidades.value), "Todas las calidades");
 });

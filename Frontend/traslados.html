@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZapaGest - Traslados</title>
+    <link rel="icon" href="img/logo software.png" type="image/png">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/bodegas.css">
+    <link rel="stylesheet" href="css/inventario.css">
+    <link rel="stylesheet" href="css/traslados.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+
+<body>
+
+    <div class="app">
+
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <img src="img/logo principal.png" alt="ZapaGest">
+            </div>
+
+            <nav class="menu">
+
+                <a href="dashboard.html" class="menu-item">
+                    <i class="fa-solid fa-house"></i>
+                    <span>Inicio</span>
+                </a>
+
+                <a href="bodegas.html" class="menu-item active">
+                    <i class="fa-solid fa-shop"></i>
+                    <span>Bodegas</span>
+                </a>
+
+                <a href="calidades.html" class="menu-item">
+                    <i class="fa-solid fa-pen"></i>
+                    <span>Calidades</span>
+                </a>
+
+                <a href="catalogo.html" class="menu-item">
+                    <i class="fa-solid fa-folder-open"></i>
+                    <span>Catálogo</span>
+                </a>
+
+                <a href="modelos.html" class="menu-item">
+                    <i class="fa-solid fa-shoe-prints"></i>
+                    <span>Modelos</span>
+                </a>
+
+                
+
+                <a href="inventario.html" class="menu-item">
+                    <i class="fa-solid fa-boxes-stacked"></i>
+                    <span>Inventario</span>
+                </a>
+
+                <a href="buscador.html" class="menu-item">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <span>Buscar</span>
+                </a>
+
+                <a href="usuarios.html" class="menu-item">
+                    <i class="fa-solid fa-users"></i>
+                    <span>Usuarios</span>
+                </a>
+
+                <a href="traslados.html" class="menu-item">
+                    <i class="fa-solid fa-truck-fast"></i>
+                    <span>Traslados</span>
+                </a>
+
+            </nav>
+        </aside>
+
+        <main class="contenido">
+
+            <header class="topbar">
+                <div class="topbar-izq">
+                    <button type="button" id="menuToggle" class="menu-toggle" aria-label="Mostrar u ocultar menú"
+                        aria-expanded="true">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <img src="img/logo principal 2.png" class="topbar-logo" alt="ZapaGest">
+                </div>
+
+                <div class="usuario-menu">
+                    <button class="usuario" id="usuarioBtn" aria-expanded="false">
+                        <i class="fa-solid fa-circle-user avatar"></i>
+                        <div class="usuario-info">
+                            <strong></strong>
+                            <small class="rol"></small>
+                        </div>
+                        <i class="fa-solid fa-chevron-down flecha"></i>
+                    </button>
+
+                    <div class="dropdown" id="usuarioDropdown">
+                        <div class="dropdown-perfil">
+                            <i class="fa-solid fa-circle-user"></i>
+                            <div>
+                                <strong></strong>
+                                <small class="rol"></small>
+                            </div>
+                        </div>
+                        <hr>
+                        <button id="logoutButton" class="dropdown-item logout">
+                            <i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <section class="dashboard">
+
+                <h1>Traslados</h1>
+                <p class="descripcion">
+                    Mueve mercancía entre ubicaciones. Cada traslado pasa por tres estados:
+                    <strong>Solicitado → En movimiento → Llegó al local</strong>.
+                </p>
+
+                <div class="bodegas-grid">
+
+                    <section class="panel">
+                        <h2>Nuevo traslado</h2>
+
+                        <form id="trasladoForm" novalidate>
+                            <div class="fila-form">
+                                <div class="form-group">
+                                    <label for="origen">Origen</label>
+                                    <select id="origen"></select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="destino">Destino</label>
+                                    <select id="destino"></select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="variante">Variante</label>
+                                    <select id="variante"></select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="cantidad">Cantidad (pares)</label>
+                                    <input type="number" id="cantidad" min="1" step="1" placeholder="Ej. 10">
+                                </div>
+                            </div>
+
+                            <p id="disponible" class="precio-hint" hidden></p>
+
+                            <button type="submit" id="guardarBtn">Solicitar traslado</button>
+                            <p id="mensaje" class="mensaje" role="status"></p>
+                        </form>
+                    </section>
+
+                    <section class="panel">
+                        <div class="panel-encabezado">
+                            <h2>Traslados</h2>
+                            <span id="contador" class="contador">0</span>
+                        </div>
+
+                        <div class="chips-estado">
+                            <button type="button" class="activo" data-estado="">Todos</button>
+                            <button type="button" data-estado="SOLICITADO"><i class="fa-solid fa-clipboard-list"></i> Solicitados</button>
+                            <button type="button" data-estado="EN_MOVIMIENTO"><i class="fa-solid fa-truck-fast"></i> En movimiento</button>
+                            <button type="button" data-estado="LLEGO"><i class="fa-solid fa-circle-check"></i> Llegaron</button>
+                        </div>
+
+                        <div class="tabla-scroll">
+                            <table class="tabla" id="tablaTraslados">
+                                <thead>
+                                    <tr>
+                                        <th>Traslado</th>
+                                        <th>Variante</th>
+                                        <th>Ruta</th>
+                                        <th>Cant.</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+
+                        <p id="vacio" class="vacio" hidden>No hay traslados en este estado.</p>
+                    </section>
+
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/menu-rol.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/mockTraslados.js"></script>
+    <script src="js/traslados.js"></script>
+
+</body>
+
+</html>

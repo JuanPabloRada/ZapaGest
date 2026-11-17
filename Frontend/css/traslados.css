@@ -1,0 +1,97 @@
+/* Estilos de Traslados. Se apoya en style.css, dashboard.css, bodegas.css e inventario.css */
+
+.chips-estado {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 14px;
+}
+
+.panel .chips-estado button {
+    display: inline-flex;
+    margin: 0;
+    padding: 6px 14px;
+    border: 1px solid #cbd5e1;
+    border-radius: 999px;
+    background: #fff;
+    color: #0f203e;
+    font-size: 14px;
+}
+
+.panel .chips-estado button.activo {
+    background: #0f203e;
+    border-color: #0f203e;
+    color: #fff;
+}
+
+.estado-traslado {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.est-solicitado { background: #fef3c7; color: #92400e; }
+.est-en_movimiento { background: #dbeafe; color: #1e40af; }
+.est-llego { background: #dcfce7; color: #107a3e; }
+.est-cancelado { background: #e5e7eb; color: #4b5563; }
+
+/* El camión se mueve un poco mientras el traslado está en la calle */
+.est-en_movimiento i { animation: camion 1.4s ease-in-out infinite; }
+
+@keyframes camion {
+    0%, 100% { transform: translateX(-2px); }
+    50% { transform: translateX(3px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .est-en_movimiento i { animation: none; }
+}
+
+/* Progreso: Solicitado → En movimiento → Llegó al local */
+.pasos {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 6px;
+}
+
+.paso {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-size: 12px;
+    background: #e5e7eb;
+    color: #9ca3af;
+}
+
+.paso.hecho { background: #0f203e; color: #fff; }
+.paso.actual { background: #2563eb; color: #fff; }
+
+.paso-linea { width: 18px; height: 2px; background: #e5e7eb; }
+.paso-linea.hecha { background: #0f203e; }
+
+.ruta i { margin: 0 6px; color: #6b7280; }
+
+.acciones-traslado { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.panel .tabla .btn-traslado {
+    display: inline-flex;
+    gap: 6px;
+    margin: 0;
+    padding: 6px 12px;
+    border: 1px solid #0f203e;
+    border-radius: 6px;
+    background: #fff;
+    color: #0f203e;
+    font-size: 13px;
+}
+
+.panel .tabla .btn-traslado:hover { background: #2563eb; border-color: #2563eb; color: #fff; }
+.panel .tabla .btn-traslado.peligro { border-color: #b42318; color: #b42318; }
+.panel .tabla .btn-traslado.peligro:hover { background: #b42318; color: #fff; }

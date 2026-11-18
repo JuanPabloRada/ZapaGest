@@ -246,4 +246,35 @@ class UbicacionServiceTest {
                 .hasMessage("No se encontró la ubicación.");
         verify(repository, never()).save(any());
     }
+
+    // ---------- Sprint 2: no desactivar ubicaciones con stock ----------
+
+    @Test
+    void noSeDesactivaUnaUbicacionConParesEnInventario() {
+        when(repository.findByIdAndNegocioId(5L, NEGOCIO)).thenReturn(Optional.of(ubicacion(5L, "Bodega 1", true)));
+        when(repository.paresEnInventario(5L)).thenReturn(24L);
+
+        assertThatThrownBy(() -> service().cambiarEstado(5L, false))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("No se puede desactivar la ubicación: tiene 24 pares en inventario. Primero deben salir o trasladarse.");
+        verify(repository, never()).save(any());
+    }
+
+    @Test
+    void conUnSoloParElMensajeVaEnSingular() {
+        when(repository.findByIdAndNegocioId(5L, NEGOCIO)).thenReturn(Optional.of(ubicacion(5L, "Bodega 1", true)));
+        when(repository.paresEnInventario(5L)).thenReturn(1L);
+
+        assertThatThrownBy(() -> service().cambiarEstado(5L, false))
+                .hasMessageContaining("tiene 1 par en inventario");
+    }
+
+    @Test
+    void siDesactivaUnaUbicacionSinStock() {
+        when(repository.findByIdAndNegocioId(5L, NEGOCIO)).thenReturn(Optional.of(ubicacion(5L, "Bodega 1", true)));
+        when(repository.paresEnInventario(5L)).thenReturn(0L);
+        when(repository.save(any(Ubicacion.class))).thenAnswer(i -> i.getArgument(0));
+
+        assertThat(service().cambiarEstado(5L, false).getActiva()).isFalse();
+    }
 }

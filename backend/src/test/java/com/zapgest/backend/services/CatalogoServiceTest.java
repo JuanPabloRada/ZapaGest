@@ -37,7 +37,9 @@ import com.zapgest.backend.models.Talla;
 import com.zapgest.backend.repositories.CalidadRepository;
 import com.zapgest.backend.repositories.ColorRepository;
 import com.zapgest.backend.repositories.ReferenciaRepository;
+import com.zapgest.backend.repositories.StockPorOpcion;
 import com.zapgest.backend.repositories.TallaRepository;
+import com.zapgest.backend.repositories.VarianteRepository;
 
 // HU-05: reglas del servicio de catalogo (sin base de datos; los repositorios se simulan).
 @ExtendWith(MockitoExtension.class)
@@ -52,13 +54,16 @@ class CatalogoServiceTest {
     private TallaRepository tallaRepository;
     @Mock
     private CalidadRepository calidadRepository;
+    @Mock
+    private VarianteRepository varianteRepository;
 
     private CatalogoService service;
     private final List<Talla> tablaTallas = new ArrayList<>();
 
     @BeforeEach
     void preparar() {
-        service = new CatalogoService(referenciaRepository, colorRepository, tallaRepository, calidadRepository);
+        service = new CatalogoService(referenciaRepository, colorRepository, tallaRepository, calidadRepository,
+                varianteRepository);
 
         // Tabla talla: 34, 34.5 ... 46
         long id = 1;
@@ -530,5 +535,73 @@ class CatalogoServiceTest {
                 .isInstanceOf(RecursoNoEncontradoException.class)
                 .hasMessage("No se encontró la referencia.");
         verify(referenciaRepository, never()).saveAndFlush(any());
+    }
+
+    // ---------- Sprint 2: no quitar opciones que tienen stock ----------
+
+    @Test
+    void editarNoDejaQuitarUnColorQueTienePares() {
+        Referencia ref = existente();
+        ref.getColores().iterator().next().setId(7L); // Blanco
+        when(varianteRepository.stockPorColor(10L)).thenReturn(List.of(new StockPorOpcion(7L, 12L)));
+
+        assertThatThrownBy(() -> service.editar(10L, con("AF1-001", "Nike Air Force", "Nike", null,
+                List.of("Negro"), List.of("38"), List.of(precio(1L, "100", "150", "200")))))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("No puedes quitar el color Blanco: hay 12 pares en inventario.");
+        assertThat(ref.getColores()).extracting(Color::getNombre).containsExactly("Blanco");
+        verify(colorRepository, never()).save(any()); // ni siquiera alcanza a crear "Negro"
+        verify(referenciaRepository, never()).saveAndFlush(any());
+    }
+
+    @Test
+    void editarNoDejaQuitarUnaTallaQueTienePares() {
+        existente();
+        Long talla38 = tablaTallas.get(8).getId();
+        when(varianteRepository.stockPorTalla(10L)).thenReturn(List.of(new StockPorOpcion(talla38, 1L)));
+
+        assertThatThrownBy(() -> service.editar(10L, con("AF1-001", "Nike Air Force", "Nike", null,
+                List.of("Blanco"), List.of("40"), List.of(precio(1L, "100", "150", "200")))))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("No puedes quitar la talla 38: hay 1 par en inventario.");
+        verify(referenciaRepository, never()).saveAndFlush(any());
+    }
+
+    @Test
+    void editarNoDejaQuitarUnaCalidadQueTienePares() {
+        existente();
+        when(varianteRepository.stockPorCalidad(10L)).thenReturn(List.of(new StockPorOpcion(1L, 3L)));
+
+        assertThatThrownBy(() -> service.editar(10L, con("AF1-001", "Nike Air Force", "Nike", null,
+                List.of("Blanco"), List.of("38"), List.of(precio(3L, "50", "70", "90")))))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("No puedes quitar la calidad Original: hay 3 pares en inventario.");
+        verify(referenciaRepository, never()).saveAndFlush(any());
+    }
+
+    @Test
+    void editarSiDejaQuitarOpcionesSinPares() {
+        Referencia ref = existente();
+        ref.getColores().iterator().next().setId(7L);
+        // Hay stock, pero de OTRO color (8): quitar Blanco (7) si se puede
+        when(varianteRepository.stockPorColor(10L)).thenReturn(List.of(new StockPorOpcion(8L, 5L)));
+
+        service.editar(10L, con("AF1-001", "Nike Air Force", "Nike", null,
+                List.of("Negro"), List.of("38"), List.of(precio(1L, "100", "150", "200"))));
+
+        verify(referenciaRepository).saveAndFlush(ref);
+    }
+
+    @Test
+    void siNoSeQuitaNadaNoConsultaElInventario() {
+        Referencia ref = existente();
+        ref.getColores().iterator().next().setId(7L);
+
+        service.editar(10L, con("AF1-001", "Nike Air Force", "Nike", null,
+                List.of("blanco", "Rojo"), List.of("38", "39"), preciosValidos()));
+
+        verify(varianteRepository, never()).stockPorColor(any());
+        verify(varianteRepository, never()).stockPorTalla(any());
+        verify(varianteRepository, never()).stockPorCalidad(any());
     }
 }

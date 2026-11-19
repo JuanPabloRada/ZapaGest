@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.zapgest.backend.dto.catalogo.CatalogoRequest;
 import com.zapgest.backend.dto.catalogo.CatalogoResponse;
+import com.zapgest.backend.dto.catalogo.OpcionesReferenciaResponse;
 import com.zapgest.backend.services.CatalogoService;
 
 // HU-05: GET, POST y PUT /api/catalogo (requieren token; ver SeguridadConfig)
@@ -30,6 +31,12 @@ public class CatalogoController {
     @GetMapping
     public List<CatalogoResponse> listar() {
         return service.listar();
+    }
+
+    // HU-07: colores, tallas y calidades de una referencia (sin costos). DUENO o ADMIN
+    @GetMapping("/{id}/opciones")
+    public OpcionesReferenciaResponse opciones(@PathVariable Long id) {
+        return service.opciones(id);
     }
 
     @PostMapping

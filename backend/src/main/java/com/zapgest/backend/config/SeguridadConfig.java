@@ -39,6 +39,8 @@ public class SeguridadConfig {
                 .toList());
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
+        // El navegador solo deja leer a JavaScript los headers que se exponen aqui (total de la busqueda, HU-09)
+        configuration.setExposedHeaders(Arrays.asList("X-Total-Count"));
         configuration.setAllowCredentials(false);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -67,6 +69,7 @@ public class SeguridadConfig {
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/usuarios/**").hasRole("DUENO")
                         .requestMatchers(HttpMethod.POST, "/api/usuarios/**").hasRole("DUENO")
+                        .requestMatchers(HttpMethod.PATCH, "/api/usuarios/**").hasRole("DUENO")
                         .requestMatchers(HttpMethod.GET, "/api/calidades/**").authenticated()
                         .requestMatchers(HttpMethod.POST, "/api/calidades/**").hasRole("DUENO")
                         .requestMatchers(HttpMethod.PUT, "/api/calidades/**").hasRole("DUENO")
@@ -74,7 +77,13 @@ public class SeguridadConfig {
                         .requestMatchers(HttpMethod.POST, "/api/ubicaciones/**").hasAnyRole("DUENO", "ADMIN")
                         .requestMatchers(HttpMethod.PATCH, "/api/ubicaciones/**").hasAnyRole("DUENO", "ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/ubicaciones/**").hasAnyRole("DUENO", "ADMIN")
-                        .requestMatchers(HttpMethod.GET, "/api/catalogo/**").authenticated()
+                        // Consulta de disponibilidad y ubicacion (HU-09/HU-10): cualquier usuario con login
+                        .requestMatchers(HttpMethod.GET, "/api/inventario/buscar").authenticated()
+                        // HU-07: ingresar mercancia es de quien maneja el inventario
+                        .requestMatchers(HttpMethod.POST, "/api/inventario/ingresos").hasAnyRole("DUENO", "ADMIN")
+                        // Catalogo y opciones para el ingreso (HU-05/HU-07): solo DUENO y ADMIN, porque
+                        // trae costo y precio minimo. El vendedor usa /colores, /tallas, /calidades y /inventario/buscar.
+                        .requestMatchers(HttpMethod.GET, "/api/catalogo/**").hasAnyRole("DUENO", "ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/catalogo/**").hasAnyRole("DUENO", "ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/catalogo/**").hasAnyRole("DUENO", "ADMIN")
                         .anyRequest().authenticated())

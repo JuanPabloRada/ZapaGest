@@ -9,6 +9,7 @@ import com.zapgest.backend.dto.CrearUsuarioRequest;
 import com.zapgest.backend.dto.LoginRequest;
 import com.zapgest.backend.dto.UsuarioResponse;
 import com.zapgest.backend.exceptions.CredencialesInvalidasException;
+import com.zapgest.backend.exceptions.RecursoNoEncontradoException;
 import com.zapgest.backend.models.Usuario;
 import com.zapgest.backend.repositories.UsuarioRepository;
 
@@ -55,6 +56,24 @@ public class UsuarioService {
         usuario.setPasswordHash(passwordEncoder.encode(datos.password()));
         usuario.setRol(datos.rol());
         usuario.setActivo(true);
+        return UsuarioResponse.desde(repository.save(usuario));
+    }
+
+    // Activar o desactivar un usuario (solo DUENO, ver SeguridadConfig).
+    // Un usuario inactivo no puede iniciar sesion, y su token deja de servir de inmediato
+    // porque JwtAuthenticationFilter revisa "activo" en cada peticion.
+    public UsuarioResponse cambiarEstado(Long id, Boolean activo, String usernameActual) {
+        if (activo == null) {
+            throw new IllegalArgumentException("Debes indicar si el usuario queda activo o inactivo.");
+        }
+        Usuario usuario = repository.findById(id)
+                .filter(u -> NEGOCIO_ID.equals(u.getNegocioId()))
+                .orElseThrow(() -> new RecursoNoEncontradoException("No se encontró el usuario."));
+
+        if (!activo && usuario.getUsername().equals(usernameActual)) {
+            throw new IllegalArgumentException("No puedes desactivar tu propio usuario.");
+        }
+        usuario.setActivo(activo);
         return UsuarioResponse.desde(repository.save(usuario));
     }
 

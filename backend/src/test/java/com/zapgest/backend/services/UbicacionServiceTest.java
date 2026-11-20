@@ -277,4 +277,15 @@ class UbicacionServiceTest {
 
         assertThat(service().cambiarEstado(5L, false).getActiva()).isFalse();
     }
+
+    @Test
+    void noSeDesactivaUnaUbicacionConTrasladosPendientes() {
+        when(repository.findByIdAndNegocioId(5L, NEGOCIO)).thenReturn(Optional.of(ubicacion(5L, "Bodega 1", true)));
+        when(repository.trasladosPendientes(5L)).thenReturn(2L);
+
+        assertThatThrownBy(() -> service().cambiarEstado(5L, false))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("No se puede desactivar la ubicación: tiene 2 traslados pendientes. Primero deben recibirse o cancelarse.");
+        verify(repository, never()).save(any());
+    }
 }

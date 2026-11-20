@@ -40,4 +40,24 @@ public interface InventarioRepository extends JpaRepository<Inventario, Long> {
             """)
     List<Inventario> conStockDe(@Param("negocioId") Long negocioId,
             @Param("varianteIds") Collection<Long> varianteIds);
+
+    // Traslados: resta stock SOLO si alcanza, en una sola sentencia. Devuelve 1 si resto y 0 si no alcanzaba.
+    // Asi dos despachos simultaneos nunca dejan el stock en negativo.
+    @Modifying(flushAutomatically = true)
+    @Query(value = """
+            UPDATE inventario SET cantidad = cantidad - :cantidad
+            WHERE variante_id = :varianteId AND ubicacion_id = :ubicacionId AND cantidad >= :cantidad
+            """, nativeQuery = true)
+    int restarSiAlcanza(@Param("varianteId") Long varianteId,
+            @Param("ubicacionId") Long ubicacionId,
+            @Param("cantidad") int cantidad);
+
+    // Traslados: lo que hay en UNA ubicacion (solo filas con stock), con los datos de la variante
+    @Query("""
+            select i from Inventario i
+            join fetch i.variante v join fetch v.referencia r join fetch v.color join fetch v.talla join fetch v.calidad
+            where i.negocioId = :negocioId and i.ubicacion.id = :ubicacionId and i.cantidad > 0
+            order by r.codigo, v.id
+            """)
+    List<Inventario> existenciasEn(@Param("negocioId") Long negocioId, @Param("ubicacionId") Long ubicacionId);
 }

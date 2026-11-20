@@ -42,4 +42,25 @@ public class MovimientoService {
         movimiento.setUsuario(usuario);
         return movimientoRepository.save(movimiento);
     }
+
+    // Traslados: deja un movimiento TRASLADO solo cuando el stock se mueve (decision del PO):
+    // al despachar, en el ORIGEN con cantidad negativa (-N); al recibir, en el DESTINO con +N.
+    @Transactional
+    public Movimiento registrarTraslado(Variante variante, Ubicacion ubicacion, int cantidadConSigno, Usuario usuario) {
+        if (variante == null || ubicacion == null || usuario == null) {
+            throw new IllegalArgumentException("Faltan datos para registrar el traslado.");
+        }
+        if (cantidadConSigno == 0) {
+            throw new IllegalArgumentException("La cantidad del traslado no puede ser cero.");
+        }
+
+        Movimiento movimiento = new Movimiento();
+        movimiento.setNegocioId(NEGOCIO_ID);
+        movimiento.setVariante(variante);
+        movimiento.setUbicacion(ubicacion);
+        movimiento.setTipo(TipoMovimiento.TRASLADO);
+        movimiento.setCantidad(cantidadConSigno);
+        movimiento.setUsuario(usuario);
+        return movimientoRepository.save(movimiento);
+    }
 }

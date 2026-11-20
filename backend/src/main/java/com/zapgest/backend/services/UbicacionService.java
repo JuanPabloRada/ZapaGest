@@ -58,6 +58,13 @@ public class UbicacionService {
         // Sprint 2 (decision del PO): no se desactiva una ubicacion que todavia tiene pares,
         // para no dejar stock "huerfano". Primero hay que sacar o trasladar esas unidades.
         if (Boolean.FALSE.equals(activa) && Boolean.TRUE.equals(ubicacion.getActiva())) {
+            // Sprint 3: tampoco si participa en traslados solicitados o en movimiento
+            long traslados = repository.trasladosPendientes(ubicacion.getId());
+            if (traslados > 0) {
+                throw new IllegalArgumentException("No se puede desactivar la ubicación: tiene " + traslados
+                        + (traslados == 1 ? " traslado pendiente" : " traslados pendientes")
+                        + ". Primero deben recibirse o cancelarse.");
+            }
             long pares = repository.paresEnInventario(ubicacion.getId());
             if (pares > 0) {
                 throw new IllegalArgumentException("No se puede desactivar la ubicación: tiene " + pares

@@ -12,9 +12,6 @@ if (!tienePermiso) document.querySelector(".dashboard").hidden = true;
 const rolActual = obtenerUsuarioSesion()?.rol;
 const puede = accion => ACCIONES[accion].includes(rolActual);
 
-// MOCK: pasa a true cuando existan las rutas /api/traslados y /api/inventario/existencias
-const USAR_API_TRASLADOS = true;
-
 // Los tres estados de un traslado (y el de cancelado)
 const ESTADOS = {
     SOLICITADO: { texto: "Solicitado", icono: "fa-clipboard-list", paso: 0 },
@@ -43,12 +40,11 @@ let traslados = [];
 let filtroEstado = "";
 let pedidoExistencias = 0; // ignora respuestas viejas al cambiar de origen
 
-// ===== ACCESO A DATOS =====
-// Contrato propuesto (ver mensaje a Juan Pablo y Joseph):
+// ===== ACCESO A DATOS (API) =====
+//   GET   /api/ubicaciones
 //   GET   /api/inventario/existencias?ubicacionId=  → [{ varianteId, referencia, modelo, color, talla, calidad, cantidad }]
 //   POST  /api/traslados { origenId, destinoId, varianteId, cantidad } → 201 traslado
-//   GET   /api/traslados → [{ id, origenId, origen, destinoId, destino, varianteId, referencia, modelo, color, talla,
-//                             calidad, cantidad, estado, solicitadoPor, solicitadoEn, despachadoEn, recibidoEn }]
+//   GET   /api/traslados
 //   PATCH /api/traslados/{id}/despachar | /recibir | /cancelar → traslado actualizado
 // Errores: { mensaje } con 400 (regla de negocio), 403 (sin permiso), 404 y 409 (estado no permitido).
 
@@ -57,23 +53,19 @@ function obtenerUbicaciones() {
 }
 
 function obtenerExistencias(ubicacionId) {
-    if (!USAR_API_TRASLADOS) return mockTraslados.existencias(Number(ubicacionId));
     return apiFetch(`/inventario/existencias?ubicacionId=${ubicacionId}`);
 }
 
 function listarTraslados() {
-    if (!USAR_API_TRASLADOS) return mockTraslados.listar();
     return apiFetch("/traslados");
 }
 
-function crearTraslado(datos, info) {
-    if (!USAR_API_TRASLADOS) return mockTraslados.crear(datos, info);
+function crearTraslado(datos) {
     return apiFetch("/traslados", { method: "POST", body: JSON.stringify(datos) });
 }
 
 // accion: "despachar" | "recibir" | "cancelar"
 function cambiarEstadoTraslado(id, accion) {
-    if (!USAR_API_TRASLADOS) return mockTraslados.cambiarEstado(id, accion);
     return apiFetch(`/traslados/${id}/${accion}`, { method: "PATCH" });
 }
 
@@ -181,16 +173,13 @@ form.addEventListener("submit", async event => {
         varianteId: variante.varianteId,
         cantidad,
     };
-    const info = {
-        origen: nombreUbicacion(selOrigen.value),
-        destino: nombreUbicacion(selDestino.value),
-        usuario: obtenerUsuarioSesion()?.nombre,
-    };
+    const origenNombre = nombreUbicacion(selOrigen.value);
+    const destinoNombre = nombreUbicacion(selDestino.value);
 
     botonGuardar.disabled = true; // evita doble clic
     try {
-        await crearTraslado(datos, info);
-        mostrarMensaje(`Traslado solicitado: ${cantidad} pares de ${descripcionVariante(variante)} de ${info.origen} a ${info.destino}.`, "ok");
+        await crearTraslado(datos);
+        mostrarMensaje(`Traslado solicitado: ${cantidad} pares de ${descripcionVariante(variante)} de ${origenNombre} a ${destinoNombre}.`, "ok");
         selVariante.value = inputCantidad.value = "";
         disponibleHint.hidden = true;
         await cargarTraslados();

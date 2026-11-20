@@ -4,8 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="ZapaGest: sistema de inventario y apoyo a ventas para pequeños negocios de zapatillas.">
 
-    <title>ZapaGest</title>
+    <title>ZapaGest | Inventario y ventas para negocios de zapatillas</title>
 
     <link rel="icon" href="img/logo software.png">
     <link rel="stylesheet" href="css/style.css">
@@ -16,14 +17,16 @@
     <header class="encabezado">
 
         <div class="logo">
-            <img src="img/logo principal.png" alt="Logo ZapaGest">
+            <img src="img/logo principal 2.png" alt="Logo ZapaGest">
         </div>
 
         <nav>
             <a href="#inicio">Inicio</a>
             <a href="#nosotros">¿Qué es ZapaGest?</a>
             <a href="#funciones">Funciones</a>
-            <a href="login.html">Iniciar sesión</a>
+            <a href="#variantes">Variantes</a>
+            <a href="#roles">Roles</a>
+            <a href="login.html" class="nav-boton">Iniciar sesión</a>
         </nav>
 
     </header>
@@ -31,20 +34,20 @@
 
     <main>
 
+        <!-- HERO -->
         <section id="inicio" class="hero">
 
             <div class="hero-texto">
 
-                <h1>Gestiona tu almacén de zapatos con ZapaGest</h1>
+                <h1>Sabe qué zapatilla tienes y dónde está, al instante</h1>
 
                 <p>
-                    ZapaGest es un software diseñado para facilitar
-                    la gestión y organización de los almacenes de zapatos.
+                    ZapaGest centraliza el inventario de tu negocio de zapatillas:
+                    consulta tallas, cantidades y ubicación exacta, registra ventas
+                    y protege tus costos y precios con roles y permisos.
                 </p>
 
-                <a href="login.html" class="boton">
-                    Iniciar sesión
-                </a>
+                <a href="login.html" class="boton">Iniciar sesión</a>
 
             </div>
 
@@ -55,47 +58,175 @@
         </section>
 
 
+        <!-- PROBLEMA -->
+        <section id="problema">
+
+            <h2>El problema que resolvemos</h2>
+
+            <p class="intro">
+                En un negocio pequeño es común perder tiempo buscando una zapatilla
+                en el local y las bodegas. Eso alarga la atención y aumenta el riesgo
+                de que el cliente se vaya sin comprar.
+            </p>
+
+            <div class="tarjetas tres">
+                <article>
+                    <h3>⏱️ Tiempo perdido</h3>
+                    <p>Los vendedores preguntan o recorren el local para saber si hay una talla.</p>
+                </article>
+                <article>
+                    <h3>📍 Ubicación incierta</h3>
+                    <p>No siempre se sabe en qué bodega, estante o nivel está el producto.</p>
+                </article>
+                <article>
+                    <h3>🔒 Información expuesta</h3>
+                    <p>Costos y precios sensibles quedan al alcance de quien no debería verlos.</p>
+                </article>
+            </div>
+
+        </section>
+
+
+        <!-- QUÉ ES -->
         <section id="nosotros">
 
             <h2>¿Qué es ZapaGest?</h2>
 
             <p>
-                ZapaGest permite gestionar de manera organizada
-                la información relacionada con los productos y
-                las operaciones de un almacén de zapatos.
+                ZapaGest es un sistema de gestión de inventario y apoyo a ventas
+                pensado para pequeños negocios de zapatillas. Permite registrar productos,
+                controlar existencias por ubicación, consultar disponibilidad en segundos,
+                registrar movimientos y ventas, y proteger la información comercial
+                según los permisos de cada usuario.
             </p>
 
         </section>
 
 
+        <!-- FUNCIONES -->
         <section id="funciones">
 
             <h2>Funciones principales</h2>
 
-            <div class="funciones">
+            <div class="tarjetas">
 
                 <article>
-                    <h3>📦 Inventario</h3>
-                    <p>
-                        Consulta y administra los productos disponibles.
-                    </p>
+                    <h3>📦 Inventario por ubicación</h3>
+                    <p>Controla cuántas unidades hay de cada variante en el local y en cada bodega.</p>
                 </article>
 
                 <article>
-                    <h3>👟 Productos</h3>
-                    <p>
-                        Registra y organiza la información de los zapatos.
-                    </p>
+                    <h3>🔎 Consulta rápida</h3>
+                    <p>El vendedor ve tallas disponibles, cantidades y la ubicación exacta para entregar el producto.</p>
                 </article>
 
                 <article>
-                    <h3>📊 Gestión</h3>
-                    <p>
-                        Mantén organizada la información del almacén.
-                    </p>
+                    <h3>🔄 Movimientos</h3>
+                    <p>Entradas, salidas, traslados, cambios y garantías, con usuario, fecha y hora.</p>
+                </article>
+
+                <article>
+                    <h3>💲 Precios protegidos</h3>
+                    <p>Costo de adquisición, precio mínimo y precio sugerido, visibles solo con permiso.</p>
+                </article>
+
+                <article>
+                    <h3>🧾 Ventas</h3>
+                    <p>Registra cada venta, asociada al vendedor, y descuenta el inventario cuando corresponde.</p>
+                </article>
+
+                <article>
+                    <h3>🤝 Ventas de terceros</h3>
+                    <p>Deja constancia de ventas de productos obtenidos de un proveedor, sin cuentas ni inventario ajeno.</p>
                 </article>
 
             </div>
+
+        </section>
+
+
+        <!-- VARIANTES Y UBICACIONES -->
+        <section id="variantes">
+
+            <h2>Cada variante, bien identificada</h2>
+
+            <p class="intro">
+                Una referencia no basta para controlar existencias. En ZapaGest cada
+                combinación de referencia, color, calidad y talla es una variante única.
+            </p>
+
+            <div class="tabla-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Referencia</th>
+                            <th>Color</th>
+                            <th>Calidad</th>
+                            <th>Talla</th>
+                            <th>Resultado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Air force 1</td><td>Blanca</td><td>Original</td><td>38</td><td>Variante A</td></tr>
+                        <tr><td>Air force 1</td><td>Negra</td><td>Original</td><td>38</td><td>Variante diferente</td></tr>
+                        <tr><td>Air force 1</td><td>Blanca</td><td>AAA</td><td>38</td><td>Variante diferente</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="tarjetas dos">
+                <article>
+                    <h3>🏷️ Calidades configurables</h3>
+                    <p>Tú defines las calidades que maneja tu negocio. No hay valores obligatorios.</p>
+                </article>
+                <article>
+                    <h3>🏬 Ubicaciones flexibles</h3>
+                    <p>Solo local, local y una bodega, o varias. Si lo necesitas, detalla hasta
+                        <strong>Bodega 1 → Estante B → Nivel 2</strong>.</p>
+                </article>
+            </div>
+
+        </section>
+
+
+        <!-- ROLES -->
+        <section id="roles">
+
+            <h2>Roles y permisos</h2>
+
+            <p class="intro">
+                Cada rol parte de una configuración inicial y el dueño puede asignar
+                o retirar permisos específicos según la organización de su negocio.
+            </p>
+
+            <div class="tarjetas tres">
+
+                <article>
+                    <h3>👑 Dueño</h3>
+                    <p>Control general: usuarios, productos, inventario, precios y permisos. Ve y gestiona costo, precio mínimo y precio sugerido.</p>
+                </article>
+
+                <article>
+                    <h3>🛠️ Administrador</h3>
+                    <p>Gestión operativa de productos, inventario, ubicaciones y movimientos. Por defecto no ve el costo de adquisición.</p>
+                </article>
+
+                <article>
+                    <h3>🛍️ Vendedor</h3>
+                    <p>Consulta disponibilidad y ubicación, atiende al cliente y registra ventas. Por defecto no ve el costo de adquisición.</p>
+                </article>
+
+            </div>
+
+        </section>
+
+
+        <!-- CTA -->
+        <section id="cta">
+
+            <h2>Ordena tu almacén desde hoy</h2>
+            <p>Ingresa a ZapaGest y empieza a controlar tu inventario.</p>
+            <a href="login.html" class="boton">Iniciar sesión</a>
 
         </section>
 
@@ -103,9 +234,8 @@
 
 
     <footer>
-        <p>© 2026 ZapaGest</p>
+        <p>© 2026 ZapaGest · Sistema de gestión de inventario para negocios de zapatillas</p>
     </footer>
-
 
 </body>
 

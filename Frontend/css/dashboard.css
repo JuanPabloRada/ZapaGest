@@ -55,11 +55,13 @@ body {
     flex-direction: column;
     gap: 5px;
     padding: 10px;
+    align-items: center;  
 }
 
 .menu-item {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 12px;
 
     padding: 12px 15px;

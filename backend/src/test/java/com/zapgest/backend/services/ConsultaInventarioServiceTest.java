@@ -41,6 +41,8 @@ import com.zapgest.backend.models.Referencia;
 import com.zapgest.backend.models.Talla;
 import com.zapgest.backend.models.Ubicacion;
 import com.zapgest.backend.models.Variante;
+import com.zapgest.backend.repositories.CatalogoBusquedaRepository;
+import com.zapgest.backend.repositories.CombinacionCatalogo;
 import com.zapgest.backend.repositories.InventarioBusquedaRepository;
 import com.zapgest.backend.repositories.InventarioRepository;
 
@@ -53,6 +55,8 @@ class ConsultaInventarioServiceTest {
     private InventarioBusquedaRepository busquedaRepository;
     @Mock
     private InventarioRepository inventarioRepository;
+    @Mock
+    private CatalogoBusquedaRepository catalogoRepository;
 
     private ConsultaInventarioService service;
 
@@ -61,7 +65,7 @@ class ConsultaInventarioServiceTest {
 
     @BeforeEach
     void preparar() {
-        service = new ConsultaInventarioService(busquedaRepository, inventarioRepository);
+        service = new ConsultaInventarioService(busquedaRepository, inventarioRepository, catalogoRepository);
 
         Referencia ref = new Referencia();
         ref.setId(1L);
@@ -108,7 +112,7 @@ class ConsultaInventarioServiceTest {
     void unaVarianteSinStockSaleConTotalCeroYSinUbicaciones() {
         devuelvePagina(negro41);
 
-        VarianteDisponibleResponse v = service.buscar(null, null, null, null, true, 0, 50).items().get(0);
+        VarianteDisponibleResponse v = service.buscar(null, null, null, null, false, 0, 50).items().get(0);
 
         assertThat(v.total()).isZero();
         assertThat(v.ubicaciones()).isEmpty();
@@ -118,7 +122,7 @@ class ConsultaInventarioServiceTest {
     void unaVarianteSinPreciosLlegaConPrecioSugeridoNull() {
         devuelvePagina(negro41);
 
-        VarianteDisponibleResponse v = service.buscar(null, null, null, null, true, 0, 50).items().get(0);
+        VarianteDisponibleResponse v = service.buscar(null, null, null, null, false, 0, 50).items().get(0);
 
         assertThat(v.precioSugerido()).isNull();
         assertThat(v.talla()).isEqualTo("41"); // sin ceros de sobra
@@ -135,10 +139,10 @@ class ConsultaInventarioServiceTest {
     void pasaLosFiltrosYElFlagDeAgotadosAlRepositorio() {
         devuelvePagina(blanco40);
 
-        service.buscar("AF1", 10L, 20L, 30L, true, 2, 25);
+        service.buscar("AF1", 10L, 20L, 30L, false, 2, 25);
 
         ArgumentCaptor<Pageable> pag = ArgumentCaptor.forClass(Pageable.class);
-        verify(busquedaRepository).buscar(eq(1L), eq("%af1%"), eq(10L), eq(20L), eq(30L), eq(true), pag.capture());
+        verify(busquedaRepository).buscar(eq(1L), eq("%af1%"), eq(10L), eq(20L), eq(30L), eq(false), pag.capture());
         assertThat(pag.getValue().getPageNumber()).isEqualTo(2);
         assertThat(pag.getValue().getPageSize()).isEqualTo(25);
     }
@@ -193,6 +197,55 @@ class ConsultaInventarioServiceTest {
     }
 
     // ===== ayudas =====
+
+    // ---------- con agotados: se recorre el catalogo ----------
+
+    @Test
+    void conAgotadosSaleTodoElCatalogoAunqueNuncaHayaTenidoIngresos() {
+        blanco40.getColor().setId(10L);
+        blanco40.getTalla().setId(20L);
+        blanco40.getCalidad().setId(30L);
+        when(catalogoRepository.buscar(anyLong(), anyString(), any(), any(), any(), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(
+                        // ya tiene variante con stock
+                        new CombinacionCatalogo(1L, "AF1-001", "Air Force", 10L, "Blanco", 20L, new BigDecimal("40"),
+                                30L, "Original", new BigDecimal("190000")),
+                        // nunca ha tenido un ingreso
+                        new CombinacionCatalogo(1L, "AF1-001", "Air Force", 11L, "Rojo", 21L, new BigDecimal("38.0"),
+                                30L, "Original", new BigDecimal("190000")))));
+        when(catalogoRepository.variantesDe(eq(1L), anyCollection())).thenReturn(List.of(blanco40));
+
+        ResultadoBusquedaInventario r = service.buscar(null, null, null, null, true, 0, 50);
+
+        assertThat(r.items()).hasSize(2);
+        VarianteDisponibleResponse conStock = r.items().get(0);
+        assertThat(conStock.varianteId()).isEqualTo(100L);
+        assertThat(conStock.total()).isEqualTo(5);
+        assertThat(conStock.precioSugerido()).isEqualByComparingTo("180000"); // manda el precio de la variante
+
+        VarianteDisponibleResponse sinIngresos = r.items().get(1);
+        assertThat(sinIngresos.varianteId()).isNull();
+        assertThat(sinIngresos.color()).isEqualTo("Rojo");
+        assertThat(sinIngresos.talla()).isEqualTo("38");
+        assertThat(sinIngresos.total()).isZero();
+        assertThat(sinIngresos.ubicaciones()).isEmpty();
+        assertThat(sinIngresos.precioSugerido()).isEqualByComparingTo("190000"); // precio del catalogo
+    }
+
+    @Test
+    void conAgotadosLosFiltrosVanAlCatalogoYNoALaBusquedaDeVariantes() {
+        when(catalogoRepository.buscar(anyLong(), anyString(), any(), any(), any(), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of()));
+
+        ResultadoBusquedaInventario r = service.buscar("Chuck", 10L, 20L, 30L, true, 1, 25);
+
+        assertThat(r.items()).isEmpty();
+        ArgumentCaptor<Pageable> pag = ArgumentCaptor.forClass(Pageable.class);
+        verify(catalogoRepository).buscar(eq(1L), eq("%chuck%"), eq(10L), eq(20L), eq(30L), pag.capture());
+        assertThat(pag.getValue().getPageNumber()).isEqualTo(1);
+        assertThat(pag.getValue().getPageSize()).isEqualTo(25);
+        verify(busquedaRepository, never()).buscar(anyLong(), anyString(), any(), any(), any(), anyBoolean(), any());
+    }
 
     private static Variante variante(Long id, Referencia ref, String color, String talla, String calidad, String precio) {
         Variante v = new Variante();

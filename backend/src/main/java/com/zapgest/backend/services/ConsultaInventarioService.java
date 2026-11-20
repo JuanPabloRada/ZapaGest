@@ -1,6 +1,8 @@
 package com.zapgest.backend.services;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +17,8 @@ import com.zapgest.backend.dto.inventario.UbicacionCantidadResponse;
 import com.zapgest.backend.dto.inventario.VarianteDisponibleResponse;
 import com.zapgest.backend.models.Inventario;
 import com.zapgest.backend.models.Variante;
+import com.zapgest.backend.repositories.CatalogoBusquedaRepository;
+import com.zapgest.backend.repositories.CombinacionCatalogo;
 import com.zapgest.backend.repositories.InventarioBusquedaRepository;
 import com.zapgest.backend.repositories.InventarioRepository;
 
@@ -28,11 +32,13 @@ public class ConsultaInventarioService {
 
     private final InventarioBusquedaRepository busquedaRepository;
     private final InventarioRepository inventarioRepository;
+    private final CatalogoBusquedaRepository catalogoRepository;
 
     public ConsultaInventarioService(InventarioBusquedaRepository busquedaRepository,
-            InventarioRepository inventarioRepository) {
+            InventarioRepository inventarioRepository, CatalogoBusquedaRepository catalogoRepository) {
         this.busquedaRepository = busquedaRepository;
         this.inventarioRepository = inventarioRepository;
+        this.catalogoRepository = catalogoRepository;
     }
 
     // q busca por codigo, nombre o marca de la referencia. color, talla y calidad son ids.
@@ -47,6 +53,11 @@ public class ConsultaInventarioService {
             throw new IllegalArgumentException("El tamaño de página debe ser al menos 1.");
         }
         int tamanoReal = Math.min(tamano, TAMANO_MAXIMO);
+
+        // Con agotados se recorre el catalogo: sale todo lo que el negocio maneja, aunque tenga 0 pares
+        if (incluirAgotados) {
+            return buscarEnCatalogo(q, colorId, tallaId, calidadId, pagina, tamanoReal);
+        }
 
         Page<Variante> variantes = busquedaRepository.buscar(NEGOCIO_ID, patron(q), colorId, tallaId, calidadId,
                 incluirAgotados, PageRequest.of(pagina, tamanoReal));
@@ -67,6 +78,59 @@ public class ConsultaInventarioService {
                 .map(v -> aRespuesta(v, porVariante.getOrDefault(v.getId(), List.of())))
                 .toList();
         return new ResultadoBusquedaInventario(items, variantes.getTotalElements());
+    }
+
+    // Todas las combinaciones del catalogo que cumplen los filtros. Si la variante ya existe se usa su id,
+    // su precio y su stock; si nunca ha tenido ingresos sale con varianteId null y total 0.
+    private ResultadoBusquedaInventario buscarEnCatalogo(String q, Long colorId, Long tallaId, Long calidadId,
+            int pagina, int tamano) {
+        Page<CombinacionCatalogo> combinaciones = catalogoRepository.buscar(NEGOCIO_ID, patron(q), colorId, tallaId,
+                calidadId, PageRequest.of(pagina, tamano));
+        if (combinaciones.isEmpty()) {
+            return new ResultadoBusquedaInventario(List.of(), combinaciones.getTotalElements());
+        }
+
+        List<Long> referencias = combinaciones.getContent().stream()
+                .map(CombinacionCatalogo::referenciaId).distinct().toList();
+        Map<String, Variante> variantes = new HashMap<>();
+        for (Variante v : catalogoRepository.variantesDe(NEGOCIO_ID, referencias)) {
+            variantes.put(clave(v.getReferencia().getId(), v.getColor().getId(), v.getTalla().getId(),
+                    v.getCalidad().getId()), v);
+        }
+
+        Map<Long, List<UbicacionCantidadResponse>> porVariante = new LinkedHashMap<>();
+        if (!variantes.isEmpty()) {
+            List<Long> ids = variantes.values().stream().map(Variante::getId).toList();
+            for (Inventario fila : inventarioRepository.conStockDe(NEGOCIO_ID, ids)) {
+                porVariante.computeIfAbsent(fila.getVariante().getId(), k -> new ArrayList<>())
+                        .add(new UbicacionCantidadResponse(
+                                fila.getUbicacion().getId(), fila.getUbicacion().getNombre(), fila.getCantidad()));
+            }
+        }
+
+        List<VarianteDisponibleResponse> items = combinaciones.getContent().stream().map(c -> {
+            Variante v = variantes.get(clave(c.referenciaId(), c.colorId(), c.tallaId(), c.calidadId()));
+            List<UbicacionCantidadResponse> ubicaciones = v == null ? List.of()
+                    : porVariante.getOrDefault(v.getId(), List.of());
+            int total = ubicaciones.stream().mapToInt(UbicacionCantidadResponse::cantidad).sum();
+            BigDecimal precio = v != null && v.getPrecioSugerido() != null ? v.getPrecioSugerido()
+                    : c.precioSugerido();
+            return new VarianteDisponibleResponse(
+                    v == null ? null : v.getId(),
+                    c.codigo(),
+                    c.nombre(),
+                    c.color(),
+                    c.talla() == null ? null : c.talla().stripTrailingZeros().toPlainString(),
+                    c.calidad(),
+                    precio,
+                    total,
+                    ubicaciones);
+        }).toList();
+        return new ResultadoBusquedaInventario(items, combinaciones.getTotalElements());
+    }
+
+    private static String clave(Long referenciaId, Long colorId, Long tallaId, Long calidadId) {
+        return referenciaId + "-" + colorId + "-" + tallaId + "-" + calidadId;
     }
 
     private static VarianteDisponibleResponse aRespuesta(Variante v, List<UbicacionCantidadResponse> ubicaciones) {

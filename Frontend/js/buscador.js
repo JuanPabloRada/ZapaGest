@@ -21,7 +21,7 @@ let temporizador = null;
 let numeroBusqueda = 0; // para ignorar respuestas viejas
 
 // ===== ACCESO A DATOS =====
-// GET /api/inventario/buscar (los tres roles). Sin parámetros devuelve solo lo que tiene stock, hasta 100 por página.
+// GET /api/inventario/buscar (los tres roles). Con incluirAgotados=true recorre todo el catálogo, hasta 100 por página.
 // Respuesta (sin costos): [{ referencia, modelo, color, talla, calidad,
 //   precioSugerido, total, ubicaciones: [{ ubicacion, cantidad }] }]
 function buscarVariantes(filtros) {
@@ -29,8 +29,9 @@ function buscarVariantes(filtros) {
     for (const [clave, valor] of Object.entries(filtros)) {
         if (valor) parametros.set(PARAMETROS[clave], valor);
     }
-    // Con un criterio de búsqueda se incluyen las variantes agotadas: así se ve "Agotado" y no "no existe"
-    if (Object.values(filtros).some(Boolean)) parametros.set("incluirAgotados", "true");
+    // Siempre con agotados (decisión del PO): sale todo el catálogo, aunque tenga 0 pares o nunca haya tenido
+    // un ingreso. Así se ve "Agotado" y no "no existe".
+    parametros.set("incluirAgotados", "true");
     parametros.set("tamano", TAMANO_PAGINA);
     return apiFetch(`/inventario/buscar?${parametros}`);
 }

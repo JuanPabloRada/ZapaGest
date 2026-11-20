@@ -13,7 +13,7 @@ const rolActual = obtenerUsuarioSesion()?.rol;
 const puede = accion => ACCIONES[accion].includes(rolActual);
 
 // MOCK: pasa a true cuando existan las rutas /api/traslados y /api/inventario/existencias
-const USAR_API_TRASLADOS = false;
+const USAR_API_TRASLADOS = true;
 
 // Los tres estados de un traslado (y el de cancelado)
 const ESTADOS = {

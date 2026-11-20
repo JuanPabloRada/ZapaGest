@@ -1,4 +1,8 @@
-const API_BASE_URL = "http://localhost:8080/api";
+// En local (Live Server) usa el backend del computador; publicado (Vercel) usa el de Render.
+// Si Render asigna otra URL al servicio, se cambia solo API_NUBE.
+const API_NUBE = "https://zapagest-api.onrender.com/api";
+const ES_LOCAL = ["localhost", "127.0.0.1"].includes(location.hostname);
+const API_BASE_URL = ES_LOCAL ? "http://localhost:8080/api" : API_NUBE;
 const TOKEN_KEY = "jwt_token";
 const USER_KEY = "usuario";
 

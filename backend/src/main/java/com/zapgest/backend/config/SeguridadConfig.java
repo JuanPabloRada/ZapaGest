@@ -81,6 +81,9 @@ public class SeguridadConfig {
                         .requestMatchers(HttpMethod.GET, "/api/inventario/buscar").authenticated()
                         // HU-07: ingresar mercancia es de quien maneja el inventario
                         .requestMatchers(HttpMethod.POST, "/api/inventario/ingresos").hasAnyRole("DUENO", "ADMIN")
+                        // Traslados entre ubicaciones (Sprint 3): solicitar, despachar, recibir y cancelar
+                        .requestMatchers(HttpMethod.GET, "/api/inventario/existencias").hasAnyRole("DUENO", "ADMIN")
+                        .requestMatchers("/api/traslados/**").hasAnyRole("DUENO", "ADMIN")
                         // Catalogo y opciones para el ingreso (HU-05/HU-07): solo DUENO y ADMIN, porque
                         // trae costo y precio minimo. El vendedor usa /colores, /tallas, /calidades y /inventario/buscar.
                         .requestMatchers(HttpMethod.GET, "/api/catalogo/**").hasAnyRole("DUENO", "ADMIN")

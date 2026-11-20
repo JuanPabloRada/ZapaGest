@@ -26,4 +26,14 @@ public interface UbicacionRepository extends JpaRepository<Ubicacion, Long> {
     // Se usa para no dejar desactivar una ubicacion con stock (decision del PO, Sprint 2).
     @Query("select coalesce(sum(i.cantidad), 0) from Inventario i where i.ubicacion.id = :ubicacionId")
     long paresEnInventario(@Param("ubicacionId") Long ubicacionId);
+
+    // Traslados que todavia usan esta ubicacion (solicitados o en movimiento, como origen o destino).
+    // Mientras haya alguno, la ubicacion no se puede desactivar.
+    @Query("""
+            select count(t) from Traslado t
+            where (t.origen.id = :ubicacionId or t.destino.id = :ubicacionId)
+            and t.estado in (com.zapgest.backend.models.EstadoTraslado.SOLICITADO,
+                             com.zapgest.backend.models.EstadoTraslado.EN_MOVIMIENTO)
+            """)
+    long trasladosPendientes(@Param("ubicacionId") Long ubicacionId);
 }

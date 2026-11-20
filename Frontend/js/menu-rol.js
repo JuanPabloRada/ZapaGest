@@ -15,8 +15,8 @@
         "calidades.html": ["DUENO"],           // HU-03: el dueño configura las calidades
         "catalogo.html": ["DUENO", "ADMIN"],
         "modelos.html": ["DUENO", "ADMIN"],               // lista y edición de modelos
-        "inventario.html": ["DUENO", "ADMIN"],
-        "traslados.html": ["DUENO", "ADMIN"],             // traslados entre ubicaciones (3 estados)            // HU-07: ingreso de mercancía
+        "inventario.html": ["DUENO", "ADMIN"],            // HU-07: ingreso de mercancía
+        "traslados.html": ["DUENO", "ADMIN"],             // traslados entre ubicaciones (3 estados)
         "buscador.html": ["DUENO", "ADMIN", "VENDEDOR"],  // HU-09 y HU-10: buscador
         "usuarios.html": ["DUENO"],            // el backend solo deja listar/crear usuarios al dueño
     };

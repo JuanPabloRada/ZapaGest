@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZapaGest - Inventario</title>
+    <link rel="icon" href="img/logo software.png" type="image/png">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/bodegas.css">
+    <link rel="stylesheet" href="css/inventario.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+
+<body>
+
+    <div class="app">
+
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <img src="img/logo principal.png" alt="ZapaGest">
+            </div>
+
+            <nav class="menu">
+
+                <a href="dashboard.html" class="menu-item">
+                    <i class="fa-solid fa-house"></i>
+                    <span>Inicio</span>
+                </a>
+
+                <a href="bodegas.html" class="menu-item">
+                    <i class="fa-solid fa-shop"></i>
+                    <span>Bodegas</span>
+                </a>
+
+                <a href="calidades.html" class="menu-item">
+                    <i class="fa-solid fa-pen"></i>
+                    <span>Calidades</span>
+                </a>
+
+                <a href="catalogo.html" class="menu-item">
+                    <i class="fa-solid fa-folder-open"></i>
+                    <span>Catálogo</span>
+                </a>
+
+                <a href="modelos.html" class="menu-item">
+                    <i class="fa-solid fa-shoe-prints"></i>
+                    <span>Modelos</span>
+                </a>
+
+                <a href="inventario.html" class="menu-item active">
+                    <i class="fa-solid fa-boxes-stacked"></i>
+                    <span>Inventario</span>
+                </a>
+
+                <a href="buscador.html" class="menu-item">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <span>Buscar</span>
+                </a>
+
+                <a href="usuarios.html" class="menu-item">
+                    <i class="fa-solid fa-users"></i>
+                    <span>Usuarios</span>
+                </a>
+
+            </nav>
+        </aside>
+
+        <main class="contenido">
+
+            <header class="topbar">
+
+                <div class="topbar-izq">
+                    <button type="button" id="menuToggle" class="menu-toggle" aria-label="Mostrar u ocultar menú"
+                        aria-expanded="true">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <img src="img/logo principal 2.png" class="topbar-logo" alt="ZapaGest">
+                </div>
+
+                <div class="usuario-menu">
+                    <button class="usuario" id="usuarioBtn" aria-expanded="false">
+                        <i class="fa-solid fa-circle-user avatar"></i>
+                        <div class="usuario-info">
+                            <strong></strong>
+                            <small class="rol"></small>
+                        </div>
+                        <i class="fa-solid fa-chevron-down flecha"></i>
+                    </button>
+
+                    <div class="dropdown" id="usuarioDropdown">
+                        <div class="dropdown-perfil">
+                            <i class="fa-solid fa-circle-user"></i>
+                            <div>
+                                <strong></strong>
+                                <small class="rol"></small>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <button id="logoutButton" class="dropdown-item logout">
+                            <i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión
+                        </button>
+                    </div>
+                </div>
+
+            </header>
+            
+            <section class="dashboard">
+
+                <h1>Ingreso de mercancía</h1>
+                <p class="descripcion">
+                    Registra las cajas que llegan: la bodega, la referencia, el color, la talla, la calidad y la cantidad.
+                    El sistema crea la variante si todavía no existe.
+                </p>
+
+                <div class="bodegas-grid">
+
+                    <section class="panel">
+                        <h2>Nuevo ingreso</h2>
+
+                        <form id="ingresoForm" novalidate>
+                            <div class="fila-form">
+                                <div class="form-group">
+                                    <label for="bodega">Bodega</label>
+                                    <select id="bodega"></select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="referencia">Referencia</label>
+                                    <select id="referencia"></select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="color">Color</label>
+                                    <select id="color"></select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="talla">Talla</label>
+                                    <select id="talla"></select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="calidad">Calidad</label>
+                                    <select id="calidad"></select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="cantidad">Cantidad (pares)</label>
+                                    <input type="number" id="cantidad" min="1" step="1" placeholder="Ej. 12">
+                                </div>
+                            </div>
+
+                            <p id="precioHint" class="precio-hint" hidden></p>
+
+                            <button type="submit" id="guardarBtn">Registrar ingreso</button>
+                            <p id="mensaje" class="mensaje" role="status"></p>
+                        </form>
+                    </section>
+
+                    <section class="panel mis-bodegas">
+                        <div class="panel-encabezado">
+                            <h2>Últimos ingresos</h2>
+                            <span id="contador" class="contador">0</span>
+                        </div>
+
+                        <div class="tabla-scroll">
+                            <table class="tabla" id="tablaIngresos">
+                                <thead>
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Referencia</th>
+                                        <th>Color</th>
+                                        <th>Talla</th>
+                                        <th>Calidad</th>
+                                        <th>Bodega</th>
+                                        <th>Cant.</th>
+                                        <th>Usuario</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+
+                        <p id="vacio" class="vacio" hidden>Aún no hay ingresos registrados.</p>
+                    </section>
+
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/menu-rol.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/inventario.js"></script>
+
+</body>
+
+</html>

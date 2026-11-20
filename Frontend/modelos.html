@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/dashboard.css">
     <link rel="stylesheet" href="css/bodegas.css"> <!-- tabla, mensajes, contador, botón editar -->
+    <link rel="stylesheet" href="css/modelos.css">
     <link rel="stylesheet" href="css/catalogo.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
@@ -51,6 +52,17 @@
                     <span>Modelos</span>
                 </a>
 
+
+                <a href="inventario.html" class="menu-item">
+                    <i class="fa-solid fa-boxes-stacked"></i>
+                    <span>Inventario</span>
+                </a>
+
+                <a href="buscador.html" class="menu-item">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <span>Buscar</span>
+                </a>
+
                 <a href="usuarios.html" class="menu-item">
                     <i class="fa-solid fa-users"></i>
                     <span>Usuarios</span>
@@ -65,8 +77,12 @@
 
             <header class="topbar">
 
-                <div class="buscador">
-                    <input type="text" id="searchInput" placeholder="Buscar...">
+                <div class="topbar-izq">
+                    <button type="button" id="menuToggle" class="menu-toggle" aria-label="Mostrar u ocultar menú"
+                        aria-expanded="true">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <img src="img/logo principal 2.png" class="topbar-logo" alt="ZapaGest">
                 </div>
 
                 <div class="usuario-menu">
@@ -106,8 +122,16 @@
                 </p>
 
                 <section class="panel panel-lista">
-                    <div class="panel-encabezado">
-                        <h2>Mis modelos</h2>
+
+                    <div class="barra-filtros">
+                        <input type="text" id="filtroTexto" placeholder="Buscar por referencia o modelo..." class="buscador">
+                        <select id="filtroMarca" aria-label="Filtrar por marca" class="desplegable">
+                            <option value="">Todas las marcas</option>
+                        </select>
+                        <button type="button" id="btnBuscar" class="btn-azul">Buscar</button>
+                        <button type="button" id="btnLimpiar" class="btn-limpiar" aria-label="Limpiar filtros">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
                         <span id="contador" class="contador">0</span>
                     </div>
 

@@ -82,17 +82,6 @@ body {
     color:#fff;
 }
 
-.icono-zapato {
-    width: 50px;
-    height: 50px;
-    filter: invert(1); /* Cambia de negro a blanco */
-    transition: transform 0.3s ease;
-}
-
-.icono-zapato:hover {
-    transform: scale(1.1); /* Efecto al pasar el cursor */
-}
-
 
 /* ===== BOTÓN CERRAR SESIÓN ===== */
 
@@ -127,7 +116,8 @@ body {
 /* ===== BARRA SUPERIOR ===== */
 
 .topbar {
-    height: 70px;
+    height: auto;
+    min-height: 70px;
     background: #fff;
     border-radius: 2px;
     /* box-shadow: 1px 0 3px 0 #0f203e; */
@@ -135,27 +125,73 @@ body {
     align-items: center;
     justify-content: space-between;
     padding: 10px 30px; /*arriba  derecha abajo izquierda*/
-    margin: 0 0 0 10px;
+    margin: 0 0 0 5px;
 }
 
-.buscador input {
-    width: 350px;
-    padding: 11px 15px;
-    border: 2px solid #0f203e;
+/* ===== Topbar con logo y botón de menú ===== */
+.topbar-izq {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding-left: 20px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+}
+
+.topbar-logo {
+    height: 52px;
+    width: auto;
+    transition: height 0.25s ease;
+}
+
+.app.menu-oculto .topbar-logo {
+    height: 80px;        /* el tamaño que quieras cuando no hay barra lateral */
+    max-height: none;
+}
+
+.menu-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    margin: 0;
+    padding: 0;
+    border: none;
     border-radius: 8px;
-    outline: none;
-    font-size: 14px;
-    transition:borde-color 0.2s;
+    background: transparent;
+    color: #0f203e;
+    font-size: 20px;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
 }
 
-.buscador input:focus{
-    border-color: #2563eb;
-    color:#0f203e;
+.menu-toggle:hover {
+    background: #b7caec;
+    color: #2563eb;
 }
-.buscador input:focus::placeholder {
-    color: #0f203e;
-    font-size: 14px;
+
+.topbar-logo { display: none; }
+.app.menu-oculto .topbar-logo { display: block; }
+
+/* ===== Barra lateral que se esconde ===== */
+.sidebar {
+    overflow: hidden;
+    transition: width 0.25s ease, box-shadow 0.25s ease;
 }
+
+.app.menu-oculto .sidebar {
+    width: 0;
+    box-shadow: none;
+}
+
+/* ===== Encabezado de tabla más grande ===== */
+.panel-lista .tabla thead th {
+    font-size: 15px;
+    padding: 16px 14px;
+    letter-spacing: 0.5px;
+}
+
 .usuario-menu {
     position: relative;   /* el dropdown se posiciona respecto a este contenedor */
     display: inline-block;
@@ -441,7 +477,15 @@ body {
 @media (max-width: 700px) {
 
     .sidebar {
-        width: 70px;
+        width: 170px;            /* antes 70px: ahora cabe el logo */
+    }
+
+    .sidebar-logo {
+        padding: 10px 8px;
+    }
+
+    .sidebar-logo img {
+        max-width: 150px;         /* 110px del menú - 16px de padding */
     }
 
     .sidebar-logo span,
@@ -449,13 +493,24 @@ body {
         display: none;
     }
 
+    .menu-item {
+        justify-content: center;
+        padding: 16px 10px;      /* más alto, para que respire */
+    }
+
+    .menu-item i {
+        font-size: 26px;         /* iconos más grandes */
+    }
+
+    .menu-item.active,
+    .menu-item:hover {
+        border-radius: 12px;
+    }
+
     .topbar {
         padding: 0 15px;
     }
 
-    .buscador input {
-        width: 180px;
-    }
 
     .cards {
         grid-template-columns: 1fr;

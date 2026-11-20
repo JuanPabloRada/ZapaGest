@@ -14,6 +14,7 @@ const textoSinUsuarios = document.getElementById("vacio");
 const buscadorUsuarios = document.getElementById("searchInput");
 
 let usuarios = [];
+const sesionActual = obtenerUsuarioSesion();
 
 // Roles del backend → texto que ve el usuario
 const ETIQUETAS_ROL = { DUENO: "Dueño", ADMIN: "Administrador", VENDEDOR: "Vendedor" };
@@ -44,19 +45,26 @@ function escaparUsuario(texto) {
 // ===== PANTALLA =====
 
 function dibujarUsuarios() {
-    const filtro = buscadorUsuarios.value.trim().toLowerCase();
+    const filtro = (buscadorUsuarios?.value ?? "").trim().toLowerCase(); // el buscador puede no existir en la página
     const visibles = usuarios.filter(usuario =>
         `${usuario.nombre} ${usuario.username} ${etiquetaRol(usuario.rol)}`.toLowerCase().includes(filtro)
     );
 
-    cuerpoTablaUsuarios.innerHTML = visibles.map(usuario => `
+    cuerpoTablaUsuarios.innerHTML = visibles.map(usuario => {
+        const activo = usuario.activo !== false;
+        const esYo = sesionActual && String(sesionActual.id) === String(usuario.id);
+        return `
         <tr>
             <td>${escaparUsuario(usuario.nombre)}</td>
             <td>${escaparUsuario(usuario.username)}</td>
             <td>${escaparUsuario(etiquetaRol(usuario.rol))}</td>
-            <td>${usuario.activo !== false ? "Activo" : "Inactivo"}</td>
-        </tr>
-    `).join("");
+            <td><span class="estado ${activo ? "activa" : "inactiva"}">${activo ? "Activo" : "Inactivo"}</span></td>
+            <td><button type="button" class="btn-estado btn-cambiar-estado"
+                data-id="${escaparUsuario(String(usuario.id))}" data-activo="${activo}"
+                ${esYo ? 'disabled title="No puedes desactivarte a ti mismo"' : ""}>
+                ${activo ? "Desactivar" : "Activar"}</button></td>
+        </tr>`;
+    }).join("");
 
     contadorUsuarios.textContent = String(usuarios.length);
     textoSinUsuarios.hidden = usuarios.length > 0;
@@ -95,6 +103,29 @@ formUsuario.addEventListener("submit", async event => {
 });
 
 if (esDueno) {
-    buscadorUsuarios.addEventListener("input", dibujarUsuarios);
+    buscadorUsuarios?.addEventListener("input", dibujarUsuarios);
+
+    // Activar / desactivar: PATCH /api/usuarios/{id} con { activo } (solo el dueño; no puede desactivarse a sí mismo)
+    cuerpoTablaUsuarios.addEventListener("click", async event => {
+        const boton = event.target.closest(".btn-cambiar-estado");
+        if (!boton) return;
+
+        const usuario = usuarios.find(u => String(u.id) === boton.dataset.id);
+        const activar = boton.dataset.activo !== "true";
+        if (!activar && !confirm(`¿Desactivar a ${usuario?.nombre ?? "este usuario"}? Perderá el acceso de inmediato.`)) return;
+
+        boton.disabled = true;
+        try {
+            await apiFetch(`/usuarios/${boton.dataset.id}`, {
+                method: "PATCH",
+                body: JSON.stringify({ activo: activar }),
+            });
+            mostrarMensajeUsuario(activar ? "Usuario activado." : "Usuario desactivado.", "ok");
+            await cargarUsuarios();
+        } catch (error) {
+            mostrarMensajeUsuario(textoError(error), "error");
+            boton.disabled = false;
+        }
+    });
     cargarUsuarios().catch(error => mostrarMensajeUsuario(textoError(error), "error"));
 }

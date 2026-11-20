@@ -18,7 +18,7 @@ const mensaje = document.getElementById("mensaje");
 const contador = document.getElementById("contador");
 const tbody = document.querySelector("#tablaBodegas tbody");
 const textoVacio = document.getElementById("vacio");
-const buscador = document.getElementById("searchInput");
+const buscador = document.getElementById("searchInput"); 
 
 // ===== ESTADO =====
 let bodegasActuales = []; // última lista dibujada
@@ -107,7 +107,7 @@ function salirModoEdicion() {
 
 function dibujarTabla(lista) {
     bodegasActuales = lista;
-    const filtro = buscador.value.trim().toLowerCase();
+    const filtro = (buscador?.value || "").trim().toLowerCase();
     const visibles = lista.filter(b => b.nombre.toLowerCase().includes(filtro));
 
     tbody.innerHTML = visibles
@@ -237,6 +237,6 @@ tbody.addEventListener("click", async function (event) {
     }
 });
 
-buscador.addEventListener("input", cargarBodegas);
+buscador?.addEventListener("input", () => dibujarTabla(bodegasActuales));
 
 document.addEventListener("DOMContentLoaded", cargarBodegas);

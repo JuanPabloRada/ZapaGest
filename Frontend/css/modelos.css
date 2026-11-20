@@ -1,0 +1,193 @@
+/* ===== Modelos: estilo limpio ===== */
+
+/* Panel claro en vez de azul oscuro */
+.dashboard .panel.panel-lista {
+    background: #fff;
+    color: #1f2937;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(15, 32, 62, 0.12);
+}
+
+.panel-lista .panel-encabezado {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+}
+
+
+.panel-lista .contador {
+    background: #2563eb;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 3px 12px;
+    border-radius: 999px;
+    margin-left: auto;
+}
+
+
+/* ----- Barra de filtros ----- */
+.barra-filtros {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    flex: 1;                /* ocupa todo el espacio libre de la barra superior */
+    margin-bottom: 20px;
+    flex-wrap: nowrap;
+}
+
+.barra-filtros input,
+.barra-filtros select {
+    flex: 1 1 200px;
+    max-width: 280px;
+    box-sizing: border-box;
+    padding: 9px 12px;
+    border: 2px solid #0f203e;
+    border-radius: 6px;
+    background: #fff;
+    color: #0f203e;
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.barra-filtros input:focus,
+.barra-filtros select:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.barra-filtros .btn-azul {
+    margin: 0;
+    padding: 9px 20px;
+    border: none;
+    border-radius: 6px;
+    background: #0f203e;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.barra-filtros .btn-azul:hover {
+    background: #2563eb;
+}
+
+.barra-filtros .btn-limpiar {
+    margin: 0;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    background: #fff;
+    color: #0f203e;
+    cursor: pointer;
+}
+
+.barra-filtros .btn-limpiar:hover {
+    background: #2563eb;
+    color: #fff;
+}
+
+/* ----- Tabla ----- */
+.panel-lista .tabla {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    color: #1f2937;
+}
+
+/* Encabezado azul */
+.panel-lista .tabla thead th {
+    background: #0f203e;
+    color: #fff;
+    padding: 16px 14px;
+    font-size: 15px;
+    font-weight: 700;
+    text-align: left;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    white-space: nowrap;
+    border: none;
+}
+
+.panel-lista .tabla thead th:first-child { border-radius: 6px 0 0 0; }
+.panel-lista .tabla thead th:last-child  { border-radius: 0 6px 0 0; }
+
+/* Filas con rayas suaves */
+.panel-lista .tabla tbody td {
+    padding: 12px;
+    vertical-align: top;
+    border: none;
+    border-bottom: 1px solid #e5e7eb;
+    color: #0f203e;
+    font-size: 14px;
+}
+
+.panel-lista .tabla tbody tr:nth-child(odd)  { background: #fff; }
+.panel-lista .tabla tbody tr:nth-child(even) { background: #f3f6fb; }
+
+.panel-lista .tabla tbody tr:hover {
+    background: #e6eefb;
+}
+
+/* Referencia y nombre del modelo destacados */
+.panel-lista .tabla tbody td:nth-child(1) {
+    font-weight: 600;
+    color: #2563eb;
+    white-space: nowrap;
+}
+
+.panel-lista .tabla tbody td:nth-child(2) {
+    color: #0f203e;
+}
+
+/* Precios por calidad: una línea por calidad */
+.panel-lista .precio-linea {
+    display: block;
+    white-space: nowrap;
+    line-height: 1.6;
+}
+
+/* Botón de acción (Editar) como enlace */
+.panel-lista .tabla tbody td button,
+.panel-lista .tabla tbody td a {
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: none;
+    color: #0f203e;
+    font-size: 13px;
+    font-family: inherit;
+    text-decoration: underline;
+    cursor: pointer;
+    display: inline;
+}
+
+.panel-lista .tabla tbody td button:hover,
+.panel-lista .tabla tbody td a:hover {
+    
+    color: #2563eb;
+    background: none;
+}
+
+/* Mensajes */
+.panel-lista .vacio {
+    padding: 24px;
+    text-align: center;
+    color: #6b7280;
+}
+
+.panel-lista .mensaje:empty {
+    display: none;
+}
+

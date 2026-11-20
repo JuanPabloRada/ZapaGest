@@ -5,10 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ZapaGest - Calidades</title>
-    <link rel="icon" href="img/logo software.png" type="image/svg+xml">
+    <link rel="icon" href="img/logo software.png" type="image/png">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/dashboard.css">
-    <!-- Comparte estilos con Bodegas (mismo diseño de formulario + tabla) -->
     <link rel="stylesheet" href="css/bodegas.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
@@ -54,11 +53,22 @@
                     <span>Modelos</span>
                 </a>
 
+                
+
+                <a href="inventario.html" class="menu-item">
+                    <i class="fa-solid fa-boxes-stacked"></i>
+                    <span>Inventario</span>
+                </a>
+
+                <a href="buscador.html" class="menu-item">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <span>Buscar</span>
+                </a>
+
                 <a href="usuarios.html" class="menu-item">
                     <i class="fa-solid fa-users"></i>
                     <span>Usuarios</span>
                 </a>
-
 
 
             </nav>
@@ -72,8 +82,12 @@
 
             <header class="topbar">
 
-                <div class="buscador">
-                    <input type="text" id="searchInput" placeholder="Buscar...">
+                <div class="topbar-izq">
+                    <button type="button" id="menuToggle" class="menu-toggle" aria-label="Mostrar u ocultar menú"
+                        aria-expanded="true">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <img src="img/logo principal 2.png" class="topbar-logo" alt="ZapaGest">
                 </div>
 
 

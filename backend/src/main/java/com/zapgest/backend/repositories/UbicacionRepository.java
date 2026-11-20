@@ -1,6 +1,8 @@
 package com.zapgest.backend.repositories;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.zapgest.backend.models.Ubicacion;
 
@@ -19,4 +21,9 @@ public interface UbicacionRepository extends JpaRepository<Ubicacion, Long> {
 
     // Para editar: repetido en OTRA ubicacion (se ignora la propia)
     boolean existsByNegocioIdAndNombreIgnoreCaseAndIdNot(Long negocioId, String nombre, Long id);
+
+    // Total de pares que hay hoy en la ubicacion (0 si no tiene inventario).
+    // Se usa para no dejar desactivar una ubicacion con stock (decision del PO, Sprint 2).
+    @Query("select coalesce(sum(i.cantidad), 0) from Inventario i where i.ubicacion.id = :ubicacionId")
+    long paresEnInventario(@Param("ubicacionId") Long ubicacionId);
 }

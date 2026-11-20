@@ -55,6 +55,15 @@ public class UbicacionService {
                 && repository.countByNegocioIdAndActivaTrue(NEGOCIO_ID) >= MAX_UBICACIONES_ACTIVAS) {
             throw new IllegalStateException("Ha alcanzado el límite máximo permitido de 10 ubicaciones");
         }
+        // Sprint 2 (decision del PO): no se desactiva una ubicacion que todavia tiene pares,
+        // para no dejar stock "huerfano". Primero hay que sacar o trasladar esas unidades.
+        if (Boolean.FALSE.equals(activa) && Boolean.TRUE.equals(ubicacion.getActiva())) {
+            long pares = repository.paresEnInventario(ubicacion.getId());
+            if (pares > 0) {
+                throw new IllegalArgumentException("No se puede desactivar la ubicación: tiene " + pares
+                        + (pares == 1 ? " par" : " pares") + " en inventario. Primero deben salir o trasladarse.");
+            }
+        }
         ubicacion.setActiva(activa);
         return repository.save(ubicacion);
     }

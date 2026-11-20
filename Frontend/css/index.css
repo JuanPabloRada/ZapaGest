@@ -1,0 +1,409 @@
+
+
+:root {
+    --azul: #2563eb;
+    --azul-oscuro: #0f203e;
+    --gris-fondo: #f8f8f8;
+    --texto: #222;
+    --texto-suave: #555;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 110px; /* evita que el menú fijo tape los títulos */
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: var(--gris-fondo);
+    color: #000;
+}
+
+
+/* =========================================
+   ENCABEZADO
+========================================= */
+
+.encabezado {
+    width: 100%;
+    height: 100px;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 0 60px;
+
+    background-color: #fff;
+    box-shadow: 0 1px 6px -1px var(--azul);
+
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+}
+
+.logo img {
+    height: 80px;
+    width: auto;
+    max-width: 260px;
+    object-fit: contain;
+}
+
+nav {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+}
+
+nav a {
+    text-decoration: none;
+    color: var(--azul-oscuro);
+    font-size: 17px;
+    font-weight: 500;
+    transition: 0.3s;
+}
+
+nav a:hover {
+    color: var(--azul);
+}
+
+nav a.nav-boton {
+    padding: 10px 20px;
+    border-radius: 8px;
+    background-color: var(--azul);
+    color: #fff;
+}
+
+nav a.nav-boton:hover {
+    background-color: var(--azul-oscuro);
+    color: #fff;
+}
+
+
+/* =========================================
+   HERO
+========================================= */
+
+.hero {
+    min-height: 600px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 70px 10%;
+
+    background-color: var(--azul-oscuro);
+}
+
+.hero-texto {
+    max-width: 600px;
+}
+
+.hero-texto h1 {
+    font-size: 48px;
+    line-height: 1.15;
+    margin-bottom: 25px;
+    color: #fff;
+}
+
+.hero-texto p {
+    font-size: 18px;
+    line-height: 1.7;
+    color: #dbe4f5;
+    margin-bottom: 35px;
+}
+
+.boton {
+    display: inline-block;
+
+    padding: 14px 30px;
+
+    background-color: var(--azul);
+    color: #fff;
+    text-decoration: none;
+
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+
+    transition: 0.3s;
+}
+
+.boton:hover {
+    background-color: #1d4fc4;
+    transform: translateY(-2px);
+}
+
+.hero-logo {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 40%;
+}
+
+.hero-logo img {
+    width: 320px;
+    max-width: 100%;
+    object-fit: contain;
+}
+
+
+/* =========================================
+   SECCIONES (estructura común)
+========================================= */
+
+main section h2 {
+    font-size: 32px;
+    margin-bottom: 20px;
+    color: var(--texto);
+}
+
+#problema,
+#nosotros,
+#funciones,
+#variantes,
+#roles,
+#cta {
+    padding: 90px 10%;
+    text-align: center;
+}
+
+/* fondos alternados */
+#problema  { background-color: var(--gris-fondo); }
+#nosotros  { background-color: #fff; }
+#funciones { background-color: var(--gris-fondo); }
+#variantes { background-color: #fff; }
+#roles     { background-color: var(--gris-fondo); }
+
+#nosotros p,
+.intro {
+    max-width: 800px;
+    margin: 0 auto;
+    font-size: 17px;
+    line-height: 1.8;
+    color: var(--texto-suave);
+}
+
+.intro {
+    margin-bottom: 45px;
+}
+
+
+/* =========================================
+   TARJETAS
+========================================= */
+
+.tarjetas {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 30px;
+
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.tarjetas.tres {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.tarjetas.dos {
+    grid-template-columns: repeat(2, 1fr);
+    margin-top: 40px;
+}
+
+.tarjetas article {
+    padding: 30px 25px;
+
+    background-color: #fff;
+    border-radius: 12px;
+    border-top: 4px solid var(--azul);
+
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+
+    text-align: left;
+    transition: 0.3s;
+}
+
+#variantes .tarjetas article {
+    background-color: var(--gris-fondo);
+}
+
+.tarjetas article:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+.tarjetas h3 {
+    font-size: 20px;
+    margin-bottom: 12px;
+    color: var(--azul-oscuro);
+}
+
+.tarjetas p {
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--texto-suave);
+}
+
+
+/* =========================================
+   TABLA DE VARIANTES
+========================================= */
+
+.tabla-scroll {
+    max-width: 800px;
+    margin: 0 auto;
+    overflow-x: auto;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #fff;
+    font-size: 15px;
+}
+
+th {
+    padding: 14px 16px;
+    background-color: var(--azul-oscuro);
+    color: #fff;
+    text-align: left;
+}
+
+td {
+    padding: 14px 16px;
+    text-align: left;
+    color: var(--texto-suave);
+    border-bottom: 1px solid #e5e7eb;
+}
+
+tbody tr:last-child td {
+    border-bottom: none;
+}
+
+tbody tr:first-child td:last-child {
+    color: var(--azul);
+    font-weight: bold;
+}
+
+
+/* =========================================
+   LLAMADO A LA ACCIÓN
+========================================= */
+
+#cta {
+    background-color: var(--azul-oscuro);
+}
+
+#cta h2 {
+    color: #fff;
+}
+
+#cta p {
+    margin-bottom: 30px;
+    font-size: 18px;
+    color: #dbe4f5;
+}
+
+
+/* =========================================
+   PIE DE PÁGINA
+========================================= */
+
+footer {
+    padding: 25px;
+    text-align: center;
+    background-color: #0a1730;
+    color: #fff;
+    font-size: 14px;
+}
+
+
+/* =========================================
+   DISEÑO PARA CELULARES
+========================================= */
+
+@media (max-width: 900px) {
+
+    .tarjetas.tres,
+    .tarjetas.dos {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+@media (max-width: 768px) {
+
+    html {
+        scroll-padding-top: 20px;
+    }
+
+    .encabezado {
+        height: auto;
+        padding: 20px;
+        flex-direction: column;
+        gap: 15px;
+        position: static; /* en celular el menú ocupa mucho: no se fija */
+    }
+
+    .logo img {
+        height: 60px;
+    }
+
+    nav {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 15px;
+    }
+
+    .hero {
+        flex-direction: column;
+        text-align: center;
+        padding: 60px 25px;
+    }
+
+    .hero-texto h1 {
+        font-size: 34px;
+    }
+
+    .hero-texto p {
+        font-size: 16px;
+    }
+
+    .hero-logo {
+        width: 100%;
+        margin-top: 50px;
+    }
+
+    .hero-logo img {
+        width: 230px;
+    }
+
+    #problema,
+    #nosotros,
+    #funciones,
+    #variantes,
+    #roles,
+    #cta {
+        padding: 60px 25px;
+    }
+
+    main section h2 {
+        font-size: 26px;
+    }
+
+}

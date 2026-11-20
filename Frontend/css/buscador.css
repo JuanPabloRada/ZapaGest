@@ -1,0 +1,211 @@
+/* Estilos de Inventario y Buscador. Se apoya en style.css, dashboard.css y bodegas.css */
+
+.fila-form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+}
+
+.form-group select {
+    width: 100%;
+    padding: 10px;
+    border: 2px solid #0f203e;
+    border-radius: 5px;
+    font-size: 16px;
+    background: #fff;
+}
+.descripcion{
+    margin-bottom: 20px;
+}
+
+.form-group select:focus,
+.buscar-barra input:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 5px rgba(37, 99, 235, 0.5);
+}
+
+.form-group select:disabled {
+    background: #f1f5f9;
+    cursor: not-allowed;
+}
+
+.precio-hint {
+    margin: 0 20px;
+    font-weight: 600;
+    color: #2563eb;
+}
+
+.buscar-barra input {
+    width: 100%;
+    padding: 14px 16px;
+    font-size: 18px;
+    border: 2px solid #0f203e;
+    border-radius: 8px;
+    box-sizing: border-box;
+}
+
+.filtros {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 14px 0;
+}
+
+.filtros select {
+    flex: 1;
+    min-width: 160px;
+    padding: 10px;
+    border: 2px solid #0f203e;
+    border-radius: 5px;
+    font-size: 15px;
+    background: #fff;
+}
+
+.filtros select:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 5px rgba(37, 99, 235, 0.5);
+}
+/* Opciones del desplegable */
+
+.filtros select option {
+    background-color: #0f203e;
+    color: #fff;
+    padding: 10px;
+}
+
+/* Opción seleccionada */
+
+.filtros select option:checked {
+    background-color: #2563EB;
+    color: #fff;
+}
+.estado-busqueda {
+    margin: 0 0 10px;
+    color: #6b7280;
+    min-height: 1.2em;
+}
+
+.tabla-scroll {
+    overflow-x: auto;
+    
+}
+
+.tabla small { color: #6b7280; }
+.tabla tr.agotado td { color: #0f203e; }
+.tabla .disponibilidad strong { color: #107a3e; }
+.tabla tr.agotado .disponibilidad strong { color: #9ca3af; }
+
+/* La tabla debe ocupar todo el espacio disponible */
+
+.tabla-scroll {
+    width: 100%;
+    max-width: none;
+    display: block;
+    overflow-x: auto;
+    box-sizing: border-box;
+}
+
+.tabla {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    box-sizing: border-box;;
+}
+
+
+/* =====================================
+   TABLA DEL BUSCADOR - DISEÑO ZAPAGEST
+===================================== */
+
+/* Tabla */
+#tablaResultados {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    color: #1f2937;
+}
+
+/* Encabezado azul */
+#tablaResultados thead th {
+    background: #0f203e;
+    color: #fff;
+    padding: 16px 14px;
+    font-size: 15px;
+    font-weight: 700;
+    text-align: left;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    white-space: nowrap;
+    border: none;
+}
+
+#tablaResultados thead th:first-child {
+    border-radius: 6px 0 0 0;
+}
+
+#tablaResultados thead th:last-child {
+    border-radius: 0 6px 0 0;
+}
+
+/* Filas intercaladas */
+#tablaResultados tbody td {
+    padding: 12px;
+    vertical-align: top;
+    border: none;
+    border-bottom: 1px solid #e5e7eb;
+    color: #0f203e;
+    font-size: 14px;
+}
+
+#tablaResultados tbody tr:nth-child(odd) {
+    background: #fff;
+}
+
+#tablaResultados tbody tr:nth-child(even) {
+    background: #f3f6fb;
+}
+
+/* Efecto al pasar el cursor */
+#tablaResultados tbody tr:hover {
+    background: #e6eefb;
+}
+
+/* Referencia destacada */
+#tablaResultados tbody td:nth-child(1) {
+    font-weight: 600;
+    color: #2563eb;
+    white-space: nowrap;
+}
+
+/* Modelo */
+#tablaResultados tbody td:nth-child(2) {
+    color: #0f203e;
+}
+
+/* Disponibilidad */
+#tablaResultados .disponibilidad strong {
+    color: #107a3e;
+}
+
+/* Productos agotados */
+#tablaResultados tr.agotado td {
+    color: #9ca3af;
+}
+
+#tablaResultados tr.agotado .disponibilidad strong {
+    color: #9ca3af;
+}
+
+/* Precio sugerido */
+#tablaResultados tbody td:last-child {
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* Contenedor con desplazamiento */
+.tabla-scroll {
+    width: 100%;
+    overflow-x: auto;
+    border-radius: 8px;
+}

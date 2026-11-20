@@ -13,9 +13,6 @@
     font-size: 16px;
     background: #fff;
 }
-.descripcion{
-    margin-bottom: 20px;
-}
 
 .form-group select:focus,
 .buscar-barra input:focus {
@@ -61,54 +58,13 @@
     background: #fff;
 }
 
-.filtros select:focus {
-    outline: none;
-    border-color: #2563eb;
-    box-shadow: 0 0 5px rgba(37, 99, 235, 0.5);
-}
-/* Opciones del desplegable */
-
-.filtros select option {
-    background-color: #0f203e;
-    color: #fff;
-    padding: 10px;
-}
-
-/* Opción seleccionada */
-
-.filtros select option:checked {
-    background-color: #2563EB;
-    color: #fff;
-}
 .estado-busqueda {
     margin: 0 0 10px;
     color: #6b7280;
     min-height: 1.2em;
 }
 
-.tabla-scroll {
-    overflow-x: auto;
-    
-}
-
 .tabla small { color: #6b7280; }
 .tabla tr.agotado td { color: #9ca3af; }
 .tabla .disponibilidad strong { color: #107a3e; }
 .tabla tr.agotado .disponibilidad strong { color: #9ca3af; }
-
-/* La tabla debe ocupar todo el espacio disponible */
-
-.tabla-scroll {
-    width: 100%;
-    max-width: none;
-    display: block;
-    overflow-x: auto;
-    box-sizing: border-box;
-}
-
-.tabla {
-    width: 100% !important;
-    max-width: none !important;
-    margin: 0 !important;
-    box-sizing: border-box;
-}
